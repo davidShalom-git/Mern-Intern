@@ -15,9 +15,24 @@ const blogSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    Images: [{
+        url: {
+            type: String,
+            required: true
+        },
+        alt: {
+            type: String,
+            default: ''
+        },
+        isPrimary: {
+            type: Boolean,
+            default: false
+        }
+    }],
+    // Keep the old Image field for backward compatibility (optional)
     Image: {
         type: String,
-        required: true
+        required: false
     },
     createdAt: {
         type: Date,

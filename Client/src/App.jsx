@@ -4,14 +4,17 @@ import Home from './Components/Home'
 import isAuthenticated from './Auth/Auth'
 import SignUp from './Auth/SignUp'
 import SignIn from './Auth/SignIn'
-
+import Blogs from './Components/Blogs'
+import Upload from './Components/Upload'
+import Nav from './Components/Nav'
+import Details from './Components/Details'
+import Logout from './Components/Logout'
 
 const App = () => {
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-  
     const checkAuth = () => {
       const authToken = isAuthenticated();
       setToken(authToken);
@@ -20,7 +23,6 @@ const App = () => {
 
     checkAuth();
 
-  
     const handleStorageChange = (e) => {
       if (e.key === 'token') {
         const authToken = isAuthenticated();
@@ -35,7 +37,6 @@ const App = () => {
     };
   }, []);
 
- 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -44,15 +45,25 @@ const App = () => {
     );
   }
 
+ 
+
   return (
     <Router>
-      <Routes>
-        <Route path='/' element={token ? <Home /> : <SignUp />} />
-        <Route path='/sign' element={token ? <Home /> : <SignUp />}/>
-        <Route path='/login' element={token ? <Home /> : <SignIn />}/>
-      </Routes>
+      <div className="min-h-screen relative">
+          <Nav />
+        <Routes>
+          <Route path='/home' element={token ? <Home /> : <SignUp />} />
+          <Route path='/sign' element={token ? <Home /> : <SignUp />} />
+          <Route path='/login' element={token ? <Home /> : <SignIn />} />
+          <Route path='/blogs' element={<Blogs />} />
+          <Route path='/blogs/:id' element={<Details />} />
+          <Route path='/upload' element={<Upload />} />
+          <Route path='/logout' element={<Logout />} />
+
+        </Routes>
+      </div>
     </Router>
-  )
+  );
 }
 
 export default App

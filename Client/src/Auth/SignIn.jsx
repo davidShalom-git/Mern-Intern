@@ -26,19 +26,23 @@ const SignUp = () => {
                 },
                 body: JSON.stringify(formData)
             })
-
             const data = await response.json();
             if (data && data.token) {
                 localStorage.setItem('token', data.token)
-                navigate('/')
+                navigate('/home') // <-- Change this to your intended post-login route
             }
+            
             return data;
         }
         catch (error) {
-            console.log("Error in Signing Up:", error)
+            console.log("Error in Signing In:", error)
         } finally {
             setIsLoading(false)
         }
+        setFormData({
+            Email: "",
+            Password: ""
+        })
     }
 
     const onChangeData = (e) => {
@@ -51,6 +55,7 @@ const SignUp = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
         await handleLogin()
+
     }
 
     const containerVariants = {
@@ -246,22 +251,22 @@ const SignUp = () => {
                     </form>
 
                     {/* Login Link */}
-                    <motion.div 
-                        className="text-center mt-6 pt-6 border-t border-white/20"
-                        variants={itemVariants}
-                    >
-                        <p className="text-white/80 drop-shadow-sm">
-                            No account?{' '}
-                            <motion.a
-                                href="/"
-                                className="text-blue-300 font-medium hover:text-blue-200 transition-colors drop-shadow-sm"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                Sign in
-                            </motion.a>
-                        </p>
-                    </motion.div>
+                      <motion.div 
+            className="text-center mt-6 pt-6 border-t border-white/20"
+            variants={itemVariants}
+        >
+            <p className="text-white/80 drop-shadow-sm">
+                No account?{' '}
+                <motion.a
+                    href="/sign" // <-- Change this to your signup route
+                    className="text-blue-300 font-medium hover:text-blue-200 transition-colors drop-shadow-sm"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    Sign up
+                </motion.a>
+            </p>
+        </motion.div>
                     </div>
                 </motion.div>
 

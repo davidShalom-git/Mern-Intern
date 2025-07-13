@@ -1,40 +1,86 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const Nav = () => {
-const [isOpen, setIsOpen] = useState(false);
+    const navLinks = [
+        { name: 'Home', path: '/home' },
+        { name: 'Blogs', path: '/blogs' },
+        { name: 'Upload', path: '/upload' },
+        { name: 'About', path: '/home' },
+    ];
 
-  return (
-    <nav className="bg-black text-white p-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl font-bold">FavBlogs</h1>
-        <button
-          className="md:hidden"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle Menu"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-        <ul className="hidden md:flex space-x-6">
-          <li><a href="#" className="hover:text-gray-400">Home</a></li>
-          <li><a href="#" className="hover:text-gray-400">Blogs</a></li>
-          <li><a href="#" className="hover:text-gray-400">Upload</a></li>
-          <li><a href="#" className="hover:text-gray-400">About</a></li>
-        </ul>
-      </div>
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-      {isOpen && (
-        <ul className="md:hidden flex flex-col space-y-4 mt-4">
-          <li><a href="#" className="hover:text-gray-400">Home</a></li>
-          <li><a href="#" className="hover:text-gray-400">Blogs</a></li>
-          <li><a href="#" className="hover:text-gray-400">Upload</a></li>
-          <li><a href="#" className="hover:text-gray-400">About</a></li>
-        </ul>
-      )}
-    </nav>
-    )
-}
+    const token = localStorage.getItem('token');
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 10);
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    return (
+        <nav className={`fixed top-0  left-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-24 xl:px-32 z-50 transition-all duration-500 ${isScrolled ? "bg-white/80 shadow-md text-gray-700 backdrop-blur-lg py-3 md:py-4" : "bg-black py-4 md:py-6 text-white"}`}>
+            {/* Logo */}
+            <a href="/" className="flex items-center gap-2">
+               <h1 className="text-4xl font-semibold">FavBlogs</h1>
+            </a>
+
+            {/* Desktop Nav */}
+            <div className="hidden md:flex items-center gap-4 lg:gap-8">
+                {navLinks.map((link, i) => (
+                    <Link key={i} to={link.path} className={`group flex flex-col gap-0.5 text-lg ${isScrolled ? "text-gray-700 " : "text-white"}`}>
+                        {link.name}
+                        <div className={`h-0.5 w-0 group-hover:w-full transition-all duration-300 ${isScrolled ? "bg-gray-700" : "bg-white"}`} />
+                    </Link>
+                ))}
+            </div>
+
+            {/* Desktop Right */}
+            <div className="hidden md:flex items-center gap-4">
+               
+               { token ?(<Link to='/logout' className={`px-8 py-2.5 rounded-full ml-4 transition-all duration-500 ${isScrolled ? "bg-black text-white" : "bg-white text-black"}`}>
+                    Logout
+                </Link>): (<Link to='/sign' className={`px-8 py-2.5 rounded-full ml-4 transition-all duration-500 ${isScrolled ? "bg-black text-white" : "bg-white text-black"}`}>
+                    Login
+                </Link>)}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="flex items-center gap-3 mr-3 md:hidden">
+                <svg onClick={() => setIsMenuOpen(!isMenuOpen)} className={`h-6 w-6 cursor-pointer ${isScrolled ? "invert" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <line x1="4" y1="6" x2="20" y2="6" />
+                    <line x1="4" y1="12" x2="20" y2="12" />
+                    <line x1="4" y1="18" x2="20" y2="18" />
+                </svg>
+            </div>
+
+            {/* Mobile Menu */}
+            <div className={`fixed  top-0 left-0  w-full h-screen bg-white text-base flex flex-col md:hidden items-center justify-center gap-6 font-medium text-gray-800 transition-all duration-500 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+                <button className="absolute top-4 right-4" onClick={() => setIsMenuOpen(false)}>
+                    <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+
+                {navLinks.map((link, i) => (
+                    <Link key={i} to={link.path} onClick={() => setIsMenuOpen(false)}>
+                        {link.name}
+                    </Link>
+                ))}
+
+                
+                <button className="bg-black text-white px-8 py-2.5 rounded-full transition-all duration-500">
+                    Login
+                </button>
+            </div>
+        </nav>
+    );
+};
 
 export default Nav;
