@@ -56,12 +56,12 @@ const Details = () => {
         fetchBlogDetails();
     }, [id])
 
-    // Handle both old single image format and new multiple images format
+   
     const getImages = () => {
         if (blogDetails?.Images && blogDetails.Images.length > 0) {
             return blogDetails.Images;
         } else if (blogDetails?.Image) {
-            // Backward compatibility - convert single image to array format
+            
             return [{ url: blogDetails.Image, alt: blogDetails.Title }];
         }
         return [];
@@ -77,10 +77,10 @@ const Details = () => {
                         <h1 className="text-3xl font-bold mb-4">{blogDetails.Title}</h1>
                         <p className="text-gray-700 mb-6">{blogDetails.Content}</p>
                         
-                        {/* Image Gallery */}
+                      
                         {images.length > 0 && (
                             <div className="mb-6">
-                                {/* Main Image Display */}
+                             
                                 <div className="relative mb-4">
                                     <img 
                                         src={images[selectedImageIndex]?.url || images[selectedImageIndex]} 
@@ -95,7 +95,7 @@ const Details = () => {
                                         <ZoomIn size={20} />
                                     </button>
                                     
-                                    {/* Navigation arrows for main image */}
+                                   
                                     {images.length > 1 && (
                                         <>
                                             <button
@@ -114,7 +114,7 @@ const Details = () => {
                                     )}
                                 </div>
 
-                                {/* Thumbnail Gallery */}
+                              
                                 {images.length > 1 && (
                                     <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
                                         {images.map((img, index) => (
@@ -149,7 +149,7 @@ const Details = () => {
                 )}
             </div>
 
-            {/* Modal for fullscreen image view */}
+          
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
                     <div className="relative max-w-4xl max-h-screen p-4">
@@ -165,8 +165,8 @@ const Details = () => {
                             alt={images[selectedImageIndex]?.alt || blogDetails.Title}
                             className="max-w-full max-h-full object-contain"
                         />
-                        
-                        {/* Modal navigation */}
+                      
+                      
                         {images.length > 1 && (
                             <>
                                 <button
@@ -184,7 +184,7 @@ const Details = () => {
                             </>
                         )}
                         
-                        {/* Image counter */}
+                      
                         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded">
                             {selectedImageIndex + 1} / {images.length}
                         </div>

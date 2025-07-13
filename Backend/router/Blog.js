@@ -2,13 +2,13 @@ const express = require('express')
 const router = express.Router()
 const Blog = require('../models/Blog')
 const { storage } = require('../config/cloudinary')
-const multer = require('multer');
+const multer = require('multer')
 
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB per file
-        files: 4 // Explicit max file count
+        fileSize: 10 * 1024 * 1024,
+        files: 5 
     },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/')) {
@@ -17,65 +17,63 @@ const upload = multer({
             cb(new Error('Only image files are allowed!'), false);
         }
     }
-})
+});
 
-// Updated route to handle multiple images
-router.post('/upload', upload.array('Images', 4), async (req, res) => {
+router.post('/upload', upload.fields([
+    { name: 'AuthorImage', maxCount: 1 },
+    { name: 'Images', maxCount: 4 }
+]), async (req, res) => {
     console.log('Upload request received');
     console.log('Request body:', req.body);
     console.log('Files:', req.files);
 
     try {
-        const { Title, Topic, Content } = req.body;
+        const { Title, Topic, Content, Author } = req.body;
 
-        // Validate required fields
-        if (!Title || !Topic || !Content) {
+        if (!Title || !Topic || !Content || !Author || !req.files['AuthorImage']) {
             return res.status(400).json({
-                message: "Title, Topic, and Content are required",
-                received: { Title, Topic, Content }
+                message: "Title, Topic, Content, Author, and AuthorImage are required",
+                received: { Title, Topic, Content, Author }
             });
         }
 
-        // Check if files were uploaded
-        if (!req.files || req.files.length === 0) {
+        const blogImages = req.files['Images'] || [];
+        if (blogImages.length === 0) {
             return res.status(400).json({
-                message: "At least one image file is required"
+                message: "At least one blog image file is required"
             });
         }
 
-        // Process uploaded images
-        const images = req.files.map((file, index) => ({
-            url: file.path, // Cloudinary URL
+        const images = blogImages.map((file, index) => ({
+            url: file.path,
             alt: `${Title} - Image ${index + 1}`,
-            isPrimary: index === 0 // First image is primary
+            isPrimary: index === 0
         }));
 
-        // Create blog post
         const blog = new Blog({
             Title,
             Topic,
             Content,
+            Author,
+            AuthorImage: req.files['AuthorImage'][0].path,
             Images: images,
-            Image: images[0].url, // Keep backward compatibility
+            Image: images[0].url
         });
 
         const newBlog = await blog.save();
 
         if (!newBlog) {
-            return res.status(500).json({
-                message: "Failed to save blog to database"
-            });
+            return res.status(500).json({ message: "Failed to save blog to database" });
         }
 
         res.status(201).json({
-            message: "Blog created successfully",
+            message: "Blog with author created successfully",
             blog: newBlog
         });
 
     } catch (error) {
         console.error('Upload error details:', error);
 
-        // Handle specific error types
         if (error.name === 'ValidationError') {
             return res.status(400).json({
                 message: "Validation error",
@@ -97,7 +95,7 @@ router.post('/upload', upload.array('Images', 4), async (req, res) => {
     }
 });
 
-// Error handling middleware for multer
+
 router.use((error, req, res, next) => {
     if (error instanceof multer.MulterError) {
         if (error.code === 'LIMIT_FILE_SIZE') {
@@ -116,30 +114,7 @@ router.use((error, req, res, next) => {
     next(error);
 });
 
-router.post('/profile', upload.single('Image'), async (req, res) => {
-    try {
-        const { Author } = req.body; // Fixed: Author should be from req.body
 
-        if (!Author || !req.file) {
-            return res.json({ message: "All Fields are required.." })
-        }
-
-        const blog = new Blog({
-            Author,
-            AuthorImage: req.file.path,
-        })
-
-        const savedAuthor = await blog.save(); // Fixed: renamed variable
-        if (!savedAuthor) {
-            return res.status(404).json({ message: "Author Details are not available" })
-        }
-
-        res.status(201).json({ "message": "Success", Author: savedAuthor })
-
-    } catch (error) {
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-})
 
 router.get('/get', async (req, res) => {
     try {
