@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const Nav = () => {
     const navLinks = [
-        { name: 'Home', path: '/home' },
+        { name: 'Home', path: '/' },
         { name: 'Blogs', path: '/blogs' },
         { name: 'Upload', path: '/upload' },
         { name: 'About', path: '/home' },

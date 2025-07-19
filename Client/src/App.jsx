@@ -50,9 +50,9 @@ const App = () => {
   return (
     <Router>
       <div className="min-h-screen relative">
-          <Nav />
+          
         <Routes>
-          <Route path='/home' element={token ? <Home /> : <SignUp />} />
+          <Route path='/' element={token ? <Home /> : <SignUp />} />
           <Route path='/sign' element={token ? <Home /> : <SignUp />} />
           <Route path='/login' element={token ? <Home /> : <SignIn />} />
           <Route path='/blogs' element={<Blogs />} />

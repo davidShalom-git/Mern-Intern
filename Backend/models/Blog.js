@@ -37,7 +37,19 @@ const blogSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    Author: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    AuthorImage: {
+        type: String,
+        required: true
+    },
+}, {
+    timestamps: true
+
 });
 
 module.exports = mongoose.model('Blog', blogSchema);
