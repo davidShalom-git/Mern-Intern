@@ -71,18 +71,7 @@ Please return only the improved content without any additional explanations or c
                 throw new Error('Invalid response format from Gemini API');
             }
         } catch (error) {
-            console.error('Gemini API Error:', error);
-
-
-            const basicImprovements = userContent
-                .replace(/\bi\b/g, 'I')
-                .replace(/\bim\b/g, "I'm")
-                .replace(/\bu\b/g, 'you')
-                .replace(/\bur\b/g, 'your')
-                .replace(/\bcoz\b/g, 'because')
-                .replace(/\.\s*([a-z])/g, (match, p1) => '. ' + p1.toUpperCase());
-
-            return basicImprovements + '\n\n⚠️ AI enhancement temporarily unavailable. Basic improvements applied.';
+            console.error('Gemini API Error:', error)
         }
     };
 
