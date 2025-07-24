@@ -9,6 +9,7 @@ import Upload from './Components/Upload'
 import Nav from './Components/Nav'
 import Details from './Components/Details'
 import Logout from './Components/Logout'
+import About from './Components/About'
 
 const App = () => {
   const [token, setToken] = useState(null);
@@ -59,6 +60,7 @@ const App = () => {
           <Route path='/blogs/:id' element={<Details />} />
           <Route path='/upload' element={<Upload />} />
           <Route path='/logout' element={<Logout />} />
+          <Route path='/about' element={<About />} />
 
         </Routes>
       </div>

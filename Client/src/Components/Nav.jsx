@@ -6,7 +6,7 @@ const Nav = () => {
         { name: 'Home', path: '/' },
         { name: 'Blogs', path: '/blogs' },
         { name: 'Upload', path: '/upload' },
-        { name: 'About', path: '/home' },
+        { name: 'About', path: '/about' },
     ];
 
     const [isScrolled, setIsScrolled] = useState(false);

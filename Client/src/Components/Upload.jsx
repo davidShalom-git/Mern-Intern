@@ -26,17 +26,17 @@ const BlogUpload = () => {
         const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
         const prompt = `Please improve the following blog content by:
-1. Correcting any grammar, spelling, and punctuation errors
-2. Improving sentence structure and clarity
-3. Making it more engaging and readable
-4. Ensuring proper capitalization and formatting
-5. Adding transitions between ideas where needed
-6. Maintaining the original meaning and tone
+                    1. Correcting any grammar, spelling, and punctuation errors
+                    2. Improving sentence structure and clarity
+                    3. Making it more engaging and readable
+                    4. Ensuring proper capitalization and formatting
+                    5. Adding transitions between ideas where needed
+                    6. Maintaining the original meaning and tone
 
-Original content:
-${userContent}
+            Original content:
+            ${userContent}
 
-Please return only the improved content without any additional explanations or comments.`;
+            Please return only the improved content without any additional explanations or comments.`;
 
         try {
             const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -223,20 +223,20 @@ Please return only the improved content without any additional explanations or c
     };
 
     return (
-       <div className='min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 py-12 px-4 relative'>
+        <div className='min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 py-12 px-4 relative'>
             <Nav />
-            
+
             {/* Animated grid */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black_40%,transparent_100%)]"></div>
-            
+
             {/* Floating orbs */}
             <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute top-1/3 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-            <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
-            
+            <div className="absolute top-1/3 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30"></div>
-            
+
             <div className="max-w-2xl mx-auto relative z-10 mt-20">
                 <div className="text-center mb-10">
                     <h1 className='text-4xl font-bold text-white mb-3'>Create Your Blog</h1>
