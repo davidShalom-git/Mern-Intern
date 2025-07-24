@@ -15,7 +15,7 @@ const BlogUpload = () => {
     const [dragActive, setDragActive] = useState(false);
     const [errors, setErrors] = useState({});
     const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const generateAIContent = async (userContent) => {
         if (!userContent.trim()) {
@@ -148,30 +148,41 @@ const BlogUpload = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const uploadData = (formDataToSend) => {
-        console.log("Uploading data...");
-        setTimeout(() => {
-            console.log("Data uploaded successfully!");
-            alert("Blog uploaded successfully!");
-        }, 1000);
-
-        fetch('http://localhost:2000/api/blog/upload', {
-            method: 'POST',
-            body: formDataToSend
-        })
-            .then(res => res.json())
-            .then(data => {
-                console.log("Data uploaded successfully:", data);
-            })
-            .catch(error => {
-                console.error("Error uploading data:", error);
+    const uploadData = async (formDataToSend) => {
+        try {
+            console.log("Uploading data...");
+            
+            const response = await fetch('http://localhost:2000/api/blog/upload', {
+                method: 'POST',
+                body: formDataToSend
             });
+            
+            const data = await response.json();
+            console.log("Data uploaded successfully:", data);
+            alert("Blog uploaded successfully!");
+            
+            // Reset form after successful upload
+            setFormData({
+                Title: "",
+                Topic: "",
+                Content: "",
+                Images: [],
+                Author: "",
+                AuthorImage: null
+            });
+            
+        } catch (error) {
+            console.error("Error uploading data:", error);
+            alert("Error uploading blog. Please try again.");
+        }
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
         if (!validateForm()) return;
+
+        setIsSubmitting(true);
 
         const formDataToSend = new FormData();
         formDataToSend.append('Title', formData.Title);
@@ -189,7 +200,8 @@ const BlogUpload = () => {
             }
         });
 
-        uploadData(formDataToSend);
+        await uploadData(formDataToSend);
+        setIsSubmitting(false);
     };
 
     const handleDrag = (e) => {
@@ -223,9 +235,8 @@ const BlogUpload = () => {
     };
 
     return (
-        <div className='min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 py-12 px-4 relative'>
+        <div className='min-h-screen mt-22 bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 py-12 px-4 relative'>
             <Nav />
-
             {/* Animated grid */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black_40%,transparent_100%)]"></div>
 
@@ -237,20 +248,20 @@ const BlogUpload = () => {
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30"></div>
 
-            <div className="max-w-2xl mx-auto relative z-10 mt-20">
+            <div className="max-w-2xl mx-auto relative z-10">
                 <div className="text-center mb-10">
                     <h1 className='text-4xl font-bold text-white mb-3'>Create Your Blog</h1>
                     <p className='text-gray-400 text-lg'>Share your thoughts with the world</p>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+                <div className="bg-black/40 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-gray-700/50">
                     <div className="space-y-8">
 
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 mb-4">
-                                <Camera className="w-5 h-5 text-indigo-600" />
-                                <label className="text-lg font-semibold text-gray-800">Blog Images</label>
-                                <span className="text-sm text-gray-500">({formData.Images.length}/4)</span>
+                                <Camera className="w-5 h-5 text-purple-400" />
+                                <label className="text-lg font-semibold text-white">Blog Images</label>
+                                <span className="text-sm text-gray-400">({formData.Images.length}/4)</span>
                             </div>
 
                             {formData.Images.length > 0 && (
@@ -260,7 +271,7 @@ const BlogUpload = () => {
                                             <img
                                                 src={image.url}
                                                 alt={image.alt}
-                                                className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
+                                                className="w-full h-24 object-cover rounded-lg border-2 border-gray-600/50"
                                             />
                                             <button
                                                 type="button"
@@ -277,8 +288,8 @@ const BlogUpload = () => {
                             {formData.Images.length < 4 && (
                                 <div
                                     className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${dragActive
-                                        ? 'border-indigo-500 bg-indigo-50'
-                                        : 'border-gray-300 hover:border-indigo-400 hover:bg-gray-50'
+                                        ? 'border-purple-400 bg-purple-500/10'
+                                        : 'border-gray-600/50 hover:border-purple-400/70 hover:bg-gray-800/30'
                                         }`}
                                     onDragEnter={handleDrag}
                                     onDragLeave={handleDrag}
@@ -295,8 +306,8 @@ const BlogUpload = () => {
                                     />
                                     <label htmlFor="imageUpload" className="cursor-pointer">
                                         <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                                        <p className="text-gray-600 mb-2">
-                                            <span className="font-semibold text-indigo-600">Click to upload</span> or drag and drop
+                                        <p className="text-gray-300 mb-2">
+                                            <span className="font-semibold text-purple-400">Click to upload</span> or drag and drop
                                         </p>
                                         <p className="text-sm text-gray-500">PNG, JPG, GIF up to 10MB</p>
                                     </label>
@@ -307,8 +318,8 @@ const BlogUpload = () => {
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="md:col-span-2">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <FileText className="w-5 h-5 text-indigo-600" />
-                                    <label className="text-lg font-semibold text-gray-800">Title</label>
+                                    <FileText className="w-5 h-5 text-purple-400" />
+                                    <label className="text-lg font-semibold text-white">Title</label>
                                 </div>
                                 <input
                                     type="text"
@@ -316,40 +327,40 @@ const BlogUpload = () => {
                                     placeholder="Enter your blog title"
                                     value={formData.Title}
                                     onChange={handleInputChange}
-                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all outline-none ${errors.Title
-                                        ? 'border-red-300 focus:border-red-500'
-                                        : 'border-gray-200 focus:border-indigo-500'
+                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all outline-none bg-gray-900/50 text-white placeholder-gray-400 ${errors.Title
+                                        ? 'border-red-400 focus:border-red-400'
+                                        : 'border-gray-600/50 focus:border-purple-400'
                                         }`}
                                 />
-                                {errors.Title && <p className="text-red-500 text-sm mt-1">{errors.Title}</p>}
+                                {errors.Title && <p className="text-red-400 text-sm mt-1">{errors.Title}</p>}
                             </div>
 
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Tag className="w-5 h-5 text-indigo-600" />
-                                    <label className="text-lg font-semibold text-gray-800">Topic</label>
+                                    <Tag className="w-5 h-5 text-purple-400" />
+                                    <label className="text-lg font-semibold text-white">Topic</label>
                                 </div>
                                 <select
                                     name="Topic"
                                     value={formData.Topic}
                                     onChange={handleInputChange}
-                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all outline-none ${errors.Topic
-                                        ? 'border-red-300 focus:border-red-500'
-                                        : 'border-gray-200 focus:border-indigo-500'
+                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all outline-none bg-gray-900/50 text-white ${errors.Topic
+                                        ? 'border-red-400 focus:border-red-400'
+                                        : 'border-gray-600/50 focus:border-purple-400'
                                         }`}
                                 >
-                                    <option value="">Select Topic</option>
+                                    <option value="" className="bg-gray-900">Select Topic</option>
                                     {['Technology', 'LifeStyle', 'Achievements', 'Food', 'Memories', 'Songs'].map((topic) => (
-                                        <option key={topic} value={topic}>{topic}</option>
+                                        <option key={topic} value={topic} className="bg-gray-900">{topic}</option>
                                     ))}
                                 </select>
-                                {errors.Topic && <p className="text-red-500 text-sm mt-1">{errors.Topic}</p>}
+                                {errors.Topic && <p className="text-red-400 text-sm mt-1">{errors.Topic}</p>}
                             </div>
 
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <User className="w-5 h-5 text-indigo-600" />
-                                    <label className="text-lg font-semibold text-gray-800">Author</label>
+                                    <User className="w-5 h-5 text-purple-400" />
+                                    <label className="text-lg font-semibold text-white">Author</label>
                                 </div>
                                 <input
                                     type="text"
@@ -357,20 +368,20 @@ const BlogUpload = () => {
                                     placeholder="Your name"
                                     value={formData.Author}
                                     onChange={handleInputChange}
-                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all outline-none ${errors.Author
-                                        ? 'border-red-300 focus:border-red-500'
-                                        : 'border-gray-200 focus:border-indigo-500'
+                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all outline-none bg-gray-900/50 text-white placeholder-gray-400 ${errors.Author
+                                        ? 'border-red-400 focus:border-red-400'
+                                        : 'border-gray-600/50 focus:border-purple-400'
                                         }`}
                                 />
-                                {errors.Author && <p className="text-red-500 text-sm mt-1">{errors.Author}</p>}
+                                {errors.Author && <p className="text-red-400 text-sm mt-1">{errors.Author}</p>}
                             </div>
                         </div>
 
                         {/* Content section with AI Generate button */}
                         <div>
                             <div className="flex items-center gap-2 mb-2">
-                                <FileText className="w-5 h-5 text-indigo-600" />
-                                <label className="text-lg font-semibold text-gray-800">Content</label>
+                                <FileText className="w-5 h-5 text-purple-400" />
+                                <label className="text-lg font-semibold text-white">Content</label>
                             </div>
                             <div className="relative">
                                 <textarea
@@ -379,9 +390,9 @@ const BlogUpload = () => {
                                     value={formData.Content}
                                     onChange={handleInputChange}
                                     rows={6}
-                                    className={`w-full px-4 py-3 pb-16 rounded-xl border-2 transition-all outline-none resize-none ${errors.Content
-                                        ? 'border-red-300 focus:border-red-500'
-                                        : 'border-gray-200 focus:border-indigo-500'
+                                    className={`w-full px-4 py-3 pb-16 rounded-xl border-2 transition-all outline-none resize-none bg-gray-900/50 text-white placeholder-gray-400 ${errors.Content
+                                        ? 'border-red-400 focus:border-red-400'
+                                        : 'border-gray-600/50 focus:border-purple-400'
                                         }`}
                                 />
 
@@ -402,34 +413,40 @@ const BlogUpload = () => {
                                     </div>
                                 </button>
                             </div>
-                            {errors.Content && <p className="text-red-500 text-sm mt-1">{errors.Content}</p>}
-                            <p className="text-xs text-gray-500 mt-1">
+                            {errors.Content && <p className="text-red-400 text-sm mt-1">{errors.Content}</p>}
+                            <p className="text-xs text-gray-400 mt-1">
                                 💡 Tip: Write your content and click "Generate AI" to improve grammar, clarity, and structure!
                             </p>
                         </div>
 
                         <div>
                             <div className="flex items-center gap-2 mb-2">
-                                <User className="w-5 h-5 text-indigo-600" />
-                                <label className="text-lg font-semibold text-gray-800">Author Image</label>
-                                <span className="text-sm text-gray-500">(Optional)</span>
+                                <User className="w-5 h-5 text-purple-400" />
+                                <label className="text-lg font-semibold text-white">Author Image</label>
+                                <span className="text-sm text-gray-400">(Optional)</span>
                             </div>
                             <input
                                 type="file"
                                 name="AuthorImage"
                                 accept="image/*"
                                 onChange={handleFileChange}
-                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 transition-all outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-600/50 focus:border-purple-400 transition-all outline-none bg-gray-900/50 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30"
                             />
                         </div>
 
                         <button
-                            type="submit"
-                            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-4 px-8 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                            type="button"
+                            onClick={handleSubmit}
+                            disabled={isSubmitting}
+                            className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white font-semibold py-4 px-8 rounded-xl hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                         >
                             <div className="flex items-center justify-center gap-2">
-                                <Upload className="w-5 h-5" />
-                                Publish Blog
+                                {isSubmitting ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <Upload className="w-5 h-5" />
+                                )}
+                                {isSubmitting ? 'Publishing...' : 'Publish Blog'}
                             </div>
                         </button>
                     </div>

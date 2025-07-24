@@ -384,11 +384,11 @@ const Home = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-bold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-purple-500/25">
-                <span className="relative z-10">Get Started</span>
+                <a href="/upload" className="relative z-10">Get Started</a>
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
               </button>
               <button className="px-8 py-4 border-2 border-purple-400 text-purple-400 rounded-full font-bold text-lg hover:bg-purple-400 hover:text-white transition-all duration-300 hover:scale-105">
-                Learn More
+                <a href="/about">Learn More</a>
               </button>
             </div>
           </motion.div>

@@ -29,7 +29,7 @@ const SignUp = () => {
             const data = await response.json();
             if (data && data.token) {
                 localStorage.setItem('token', data.token)
-                navigate('/home') // <-- Change this to your intended post-login route
+                navigate('/') // 
             }
             
             return data;
