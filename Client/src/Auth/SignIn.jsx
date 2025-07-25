@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import bg from '../assets/bg.jpg'
 
-const SignUp = () => {
+const SignIn = () => {
     const [formData, setFormData] = useState({
         Email: "",
         Password: ""
@@ -306,4 +306,4 @@ const SignUp = () => {
     )
 }
 
-export default SignUp
+export default SignIn
