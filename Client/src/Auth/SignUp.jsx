@@ -2,8 +2,7 @@ import React from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-// Note: Remove this import since we can't access local files in artifacts
-// import bg from '../assets/bg.jpg'
+import bg from '../assets/bg.jpg'
 
 const SignUp = () => {
     const [formData, setFormData] = useState({
@@ -14,15 +13,12 @@ const SignUp = () => {
 
     const [isLoading, setIsLoading] = useState(false)
     const [focusedField, setFocusedField] = useState(null)
-    const [error, setError] = useState("") // Add error state
 
     const URL = 'https://mern-intern-xi.vercel.app/api/blog/register'
     const navigate = useNavigate()
 
     const handleSignUp = async () => {
         setIsLoading(true)
-        setError("") // Clear previous errors
-        
         try {
             const response = await fetch(URL, {
                 method: 'POST',
@@ -33,29 +29,14 @@ const SignUp = () => {
             })
 
             const data = await response.json();
-            
-            // Check if the response was successful
-            if (response.ok) {
-                // Store token if provided
-                if (data.token) {
-                    localStorage.setItem('token', data.token)
-                }
-                
-                // Navigate to main page on successful registration
-                console.log("Registration successful, navigating to home...")
-                navigate('/', { replace: true })
-            } else {
-                // Handle error cases
-                const errorMessage = data.message || data.error || "Registration failed. Please try again."
-                setError(errorMessage)
-                console.error("Registration failed:", errorMessage)
+            if (data && data.token) {
+                localStorage.setItem('token', data.token)
+                navigate('/')
             }
-            
             return data;
         }
         catch (error) {
             console.log("Error in Signing Up:", error)
-            setError("Network error. Please check your connection and try again.")
         } finally {
             setIsLoading(false)
         }
@@ -66,8 +47,6 @@ const SignUp = () => {
             ...formData,
             [e.target.name]: e.target.value
         })
-        // Clear error when user starts typing
-        if (error) setError("")
     }
 
     const onSubmit = async (e) => {
@@ -108,8 +87,15 @@ const SignUp = () => {
 
     return (
         <div
-            className="min-h-screen flex items-center justify-center p-4 relative bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900"
+            className="min-h-screen flex items-center justify-center p-4 relative"
+            style={{
+                backgroundImage: `url(${bg})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+            }}
         >
+
             <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
             <motion.div
                 className="w-full max-w-md relative z-10"
@@ -117,6 +103,7 @@ const SignUp = () => {
                 initial="hidden"
                 animate="visible"
             >
+
                 <motion.div
                     className="text-center mb-8"
                     variants={itemVariants}
@@ -136,28 +123,21 @@ const SignUp = () => {
                     </motion.p>
                 </motion.div>
 
+
                 <motion.div
                     className="backdrop-blur-2xl bg-white/10 rounded-3xl shadow-2xl border border-white/20 p-8 relative overflow-hidden"
                     variants={itemVariants}
                     whileHover={{ y: -5, boxShadow: "0 25px 50px rgba(0, 0, 0, 0.3)" }}
                     transition={{ duration: 0.3 }}
                 >
+
                     <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/5 to-transparent rounded-3xl"></div>
                     <div className="absolute inset-0 bg-gradient-to-tl from-blue-500/10 via-transparent to-purple-500/10 rounded-3xl"></div>
 
-                    <div className="relative z-10">
-                        {/* Error Message */}
-                        {error && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-200 text-sm"
-                            >
-                                {error}
-                            </motion.div>
-                        )}
 
+                    <div className="relative z-10">
                         <form onSubmit={onSubmit} className="space-y-6">
+
                             <motion.div
                                 className="space-y-2"
                                 variants={itemVariants}
@@ -194,6 +174,7 @@ const SignUp = () => {
                                     />
                                 </motion.div>
                             </motion.div>
+
 
                             <motion.div
                                 className="space-y-2"
@@ -232,6 +213,7 @@ const SignUp = () => {
                                 </motion.div>
                             </motion.div>
 
+
                             <motion.div
                                 className="space-y-2"
                                 variants={itemVariants}
@@ -269,6 +251,7 @@ const SignUp = () => {
                                 </motion.div>
                             </motion.div>
 
+
                             <motion.div variants={itemVariants}>
                                 <motion.button
                                     type="submit"
@@ -299,15 +282,16 @@ const SignUp = () => {
                             </motion.div>
                         </form>
 
+
                         <motion.div
                             className="text-center mt-6 pt-6 border-t border-white/20"
                             variants={itemVariants}
                         >
                             <p className="text-white/80 drop-shadow-sm">
                                 Already have an account?{' '}
-                                <Link
+                              <Link
                                     to="/login"
-                                    className="text-blue-400 hover:underline"
+                                    className="text-blue-400 hover:underline"                                    
                                 >
                                     Login
                                 </Link>
