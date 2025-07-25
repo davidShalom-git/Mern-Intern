@@ -1,6 +1,6 @@
 import React from 'react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import bg from '../assets/bg.jpg'
 
@@ -289,14 +289,12 @@ const SignUp = () => {
                         >
                             <p className="text-white/80 drop-shadow-sm">
                                 Already have an account?{' '}
-                                <motion.a
-                                    href="/login"
-                                    className="text-blue-300 font-medium hover:text-blue-200 transition-colors drop-shadow-sm"
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
+                              <Link
+                                    to="/login"
+                                    className="text-blue-400 hover:underline"                                    
                                 >
-                                    Sign in
-                                </motion.a>
+                                    Login
+                                </Link>
                             </p>
                         </motion.div>
                     </div>
