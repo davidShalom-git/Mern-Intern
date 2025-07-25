@@ -198,6 +198,7 @@ const Home = () => {
                 className={`group relative cursor-pointer ${category.hover}`}
               >
                 <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 h-full shadow-2xl transition-all duration-300 hover:bg-white/10">
+                <Link to='/blogs'>
                   <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-10 rounded-3xl transition-opacity duration-300`}></div>
                   
                   <div className="relative z-10">
@@ -211,12 +212,13 @@ const Home = () => {
                       {category.description}
                     </p>
                     <div className="flex items-center text-purple-400 group-hover:text-pink-400 transition-colors duration-300">
-                      <span className="mr-2">Explore</span>
+                      <a href="/blogs" className="mr-2">Explore</a>
                       <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
                   </div>
+                </Link>
                 </div>
               </motion.div>
             ))}
