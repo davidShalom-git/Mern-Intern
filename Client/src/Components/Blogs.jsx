@@ -142,7 +142,7 @@ const Blogs = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredBlogs.map(blog => (
                         <div key={blog._id} className="group">
-                            <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 transform hover:-translate-y-2">
+                            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-500 overflow-hidden border border-gray-700/50 transform hover:-translate-y-2">
                                 <Link to={`/blogs/${blog._id}`} className="block relative overflow-hidden">
                                     <img
                                         className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
@@ -152,15 +152,15 @@ const Blogs = () => {
                                             e.target.src = "https://images.unsplash.com/photo-1516414447565-b14be0adf13e?w=400&h=250&fit=crop";
                                         }}
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 </Link>
 
                                 <div className="p-6">
                                     <div className="flex items-center justify-between mb-4">
-                                        <span className="px-3 py-1 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 text-xs font-bold rounded-full border border-purple-200">
+                                        <span className="px-3 py-1 bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 text-xs font-bold rounded-full border border-purple-400/30">
                                             {blog.Topic}
                                         </span>
-                                        <span className="text-sm text-gray-500 font-medium">
+                                        <span className="text-sm text-gray-400 font-medium">
                                             {new Date(blog.createdAt).toLocaleDateString('en-US', { 
                                                 month: 'short', 
                                                 day: 'numeric', 
@@ -170,12 +170,12 @@ const Blogs = () => {
                                     </div>
                                     
                                     <Link to={`/blogs/${blog._id}`}>
-                                        <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-purple-600 transition-colors duration-300">
+                                        <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-purple-300 transition-colors duration-300">
                                             {blog.Title}
                                         </h3>
                                     </Link>
 
-                                    <p className="text-gray-600 mb-6 line-clamp-3 leading-relaxed">
+                                    <p className="text-gray-300 mb-6 line-clamp-3 leading-relaxed">
                                         {blog.Content}
                                     </p>
                                     

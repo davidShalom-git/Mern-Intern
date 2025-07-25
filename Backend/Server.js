@@ -1,3 +1,4 @@
+
 require('dotenv').config()
 const express = require('express')
 const app = express()
@@ -15,17 +16,24 @@ mongoose.connect(process.env.MONGODB_URL).then((res)=> {
 })
 
 
-
-
 app.use(cors())
 app.use(bodyParser.json())
-
 
 app.use('/api/blog',blog);
 app.use('/api/blog',User);
 
 
+app.get('/', (req, res) => {
+    res.json({ message: 'API is running successfully!' });
+});
 
-app.listen(2000,()=> {
-    console.log("Server Connected.....")
-})
+
+module.exports = app;
+
+
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 2000;
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}

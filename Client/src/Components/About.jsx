@@ -224,7 +224,7 @@ const About = () => {
                 </span>
               </h2>
               <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                Hi! I'm David Shalom, a passionate full-stack developer specializing in the MERN stack and mobile app development. With 5+ years of experience, I transform ideas into powerful digital solutions that make a real impact.
+                Hi! I'm David Shalom, a passionate full-stack developer specializing in the MERN stack and mobile app development. With 1+ years of experience, I transform ideas into powerful digital solutions that make a real impact.
               </p>
               <p className="text-gray-300 text-lg leading-relaxed mb-6">
                 My journey in tech started with a curiosity about how things work behind the scenes. Today, I build scalable web applications and cross-platform mobile apps that serve thousands of users worldwide.

@@ -70,13 +70,13 @@ const Details = () => {
             <div className="container mx-auto mt-28 px-4 py-8 relative z-10 flex justify-center">
                 {blogDetails ? (
                     <div
-                        className="relative z-20 max-w-4xl w-full mx-auto bg-white border border-gray-200 shadow-2xl rounded-2xl p-8"
+                        className="relative z-20 max-w-4xl w-full mx-auto bg-gray-800/60 backdrop-blur-lg border border-gray-700/50 shadow-2xl shadow-purple-500/10 rounded-2xl p-8"
                         style={{
-                            backdropFilter: "blur(1px)" // softens background but keeps card opaque
+                            backdropFilter: "blur(10px)" // enhanced blur for glassmorphic effect
                         }}
                     >
                         <div className="flex justify-between items-center mb-4">
-                            <div className="text-3xl font-bold">{blogDetails.Title}</div>
+                            <div className="text-3xl font-bold text-white">{blogDetails.Title}</div>
                             <div className="text-sm text-gray-400">Created: {new Date(blogDetails.createdAt).toLocaleDateString()}</div>
                         </div>
 
@@ -86,12 +86,12 @@ const Details = () => {
                                     <img
                                         src={images[selectedImageIndex]?.url || images[selectedImageIndex]}
                                         alt={images[selectedImageIndex]?.alt || blogDetails.Title}
-                                        className="w-full h-80 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity border border-gray-100"
+                                        className="w-full h-80 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity border border-gray-600/50"
                                         onClick={() => openModal(selectedImageIndex)}
                                     />
                                     <button
                                         onClick={() => openModal(selectedImageIndex)}
-                                        className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                                        className="absolute top-4 right-4 bg-gray-900/70 backdrop-blur-sm text-white p-2 rounded-full hover:bg-gray-800/80 transition-all"
                                     >
                                         <ZoomIn size={20} />
                                     </button>
@@ -99,13 +99,13 @@ const Details = () => {
                                         <>
                                             <button
                                                 onClick={prevImage}
-                                                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                                                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-gray-900/70 backdrop-blur-sm text-white p-2 rounded-full hover:bg-gray-800/80 transition-all"
                                             >
                                                 <ChevronLeft size={20} />
                                             </button>
                                             <button
                                                 onClick={nextImage}
-                                                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                                                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gray-900/70 backdrop-blur-sm text-white p-2 rounded-full hover:bg-gray-800/80 transition-all"
                                             >
                                                 <ChevronRight size={20} />
                                             </button>
@@ -118,8 +118,8 @@ const Details = () => {
                                             <div
                                                 key={index}
                                                 className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${selectedImageIndex === index
-                                                        ? 'border-blue-500 ring-2 ring-blue-300'
-                                                        : 'border-gray-200 hover:border-gray-400'
+                                                        ? 'border-purple-400 ring-2 ring-purple-300/50'
+                                                        : 'border-gray-600/50 hover:border-gray-500'
                                                     }`}
                                                 onClick={() => handleImageClick(index)}
                                             >
@@ -135,12 +135,12 @@ const Details = () => {
                             </div>
                         )}
 
-                        <p className="mt-4 text-sm text-gray-500">Topic: {blogDetails.Topic}</p>
-                        <p className="text-gray-700 mb-6">{blogDetails.Content}</p>
+                        <p className="mt-4 text-sm text-purple-300">Topic: {blogDetails.Topic}</p>
+                        <p className="text-gray-300 mb-6 leading-relaxed">{blogDetails.Content}</p>
                     </div>
                 ) : (
                     <div className="flex justify-center items-center min-h-screen">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
                     </div>
                 )}
             </div>
@@ -148,36 +148,36 @@ const Details = () => {
      
      
           {/* Image Modal */}         {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50">
                     <div className="relative max-w-4xl max-h-screen p-4">
                         <button
                             onClick={closeModal}
-                            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+                            className="absolute top-4 right-4 text-white hover:text-purple-300 z-10 bg-gray-900/50 backdrop-blur-sm rounded-full p-2 transition-all"
                         >
                             <X size={32} />
                         </button>
                         <img
                             src={images[selectedImageIndex]?.url || images[selectedImageIndex]}
                             alt={images[selectedImageIndex]?.alt || blogDetails.Title}
-                            className="max-w-full max-h-full object-contain"
+                            className="max-w-full max-h-full object-contain rounded-lg"
                         />
                         {images.length > 1 && (
                             <>
                                 <button
                                     onClick={prevImage}
-                                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300"
+                                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-purple-300 bg-gray-900/50 backdrop-blur-sm rounded-full p-2 transition-all"
                                 >
                                     <ChevronLeft size={40} />
                                 </button>
                                 <button
                                     onClick={nextImage}
-                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300"
+                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-purple-300 bg-gray-900/50 backdrop-blur-sm rounded-full p-2 transition-all"
                                 >
                                     <ChevronRight size={40} />
                                 </button>
                             </>
                         )}
-                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded">
+                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-gray-900/70 backdrop-blur-sm px-4 py-2 rounded-full">
                             {selectedImageIndex + 1} / {images.length}
                         </div>
                     </div>
