@@ -12,12 +12,15 @@ const SignUp = () => {
 
     const [isLoading, setIsLoading] = useState(false)
     const [focusedField, setFocusedField] = useState(null)
+    const [error, setError] = useState("") // Add error state
 
     const URL = 'https://mern-intern-xi.vercel.app/api/blog/login'
     const navigate = useNavigate()
 
     const handleLogin = async () => {
         setIsLoading(true)
+        setError("") // Clear previous errors
+        
         try {
             const response = await fetch(URL, {
                 method: 'POST',
@@ -26,23 +29,26 @@ const SignUp = () => {
                 },
                 body: JSON.stringify(formData)
             })
+            
             const data = await response.json();
-            if (data && data.token) {
+            
+            // Check if response is successful
+            if (response.ok && data && data.token) {
                 localStorage.setItem('token', data.token)
-                navigate('/') 
+                console.log("Login successful, navigating...") // Debug log
+                navigate('/', { replace: true }) // Use replace: true for immediate navigation
+            } else {
+                // Handle login errors
+                setError(data.message || "Login failed. Please check your credentials.")
+                console.log("Login failed:", data)
             }
             
-            return data;
-        }
-        catch (error) {
+        } catch (error) {
             console.log("Error in Signing In:", error)
+            setError("Network error. Please try again.")
         } finally {
             setIsLoading(false)
         }
-        setFormData({
-            Email: "",
-            Password: ""
-        })
     }
 
     const onChangeData = (e) => {
@@ -50,12 +56,18 @@ const SignUp = () => {
             ...formData,
             [e.target.name]: e.target.value
         })
+        // Clear error when user starts typing
+        if (error) setError("")
     }
 
     const onSubmit = async (e) => {
         e.preventDefault();
         await handleLogin()
-
+        // Remove this - don't clear form data immediately after login attempt
+        // setFormData({
+        //     Email: "",
+        //     Password: ""
+        // })
     }
 
     const containerVariants = {
@@ -140,133 +152,145 @@ const SignUp = () => {
                     
                     {/* Content container */}
                     <div className="relative z-10">
-                    <form onSubmit={onSubmit} className="space-y-6">
-                     
-
-                        {/* Email Field */}
-                        <motion.div 
-                            className="space-y-2"
-                            variants={itemVariants}
-                        >
-                            <label className="text-sm font-medium text-white/90 block drop-shadow-sm">
-                                Email Address
-                            </label>
+                        {/* Error Message */}
+                        {error && (
                             <motion.div 
-                                className="relative"
-                                animate={{ 
-                                    scale: focusedField === 'Email' ? 1.02 : 1,
-                                }}
-                                transition={{ duration: 0.2 }}
+                                className="mb-4 p-3 bg-red-500/20 border border-red-400/30 rounded-lg text-red-200 text-sm backdrop-blur-sm"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3 }}
                             >
-                                <input
-                                    type="email"
-                                    name="Email"
-                                    value={formData.Email}
-                                    onChange={onChangeData}
-                                    onFocus={() => setFocusedField('Email')}
-                                    onBlur={() => setFocusedField(null)}
-                                    className="w-full px-4 py-4 bg-white/20 backdrop-blur-xl border border-white/30 rounded-xl focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/30 transition-all duration-300 text-white placeholder-white/60 shadow-inner"
-                                    placeholder="Enter your email"
-                                    required
-                                />
+                                {error}
+                            </motion.div>
+                        )}
+
+                        <form onSubmit={onSubmit} className="space-y-6">
+                            {/* Email Field */}
+                            <motion.div 
+                                className="space-y-2"
+                                variants={itemVariants}
+                            >
+                                <label className="text-sm font-medium text-white/90 block drop-shadow-sm">
+                                    Email Address
+                                </label>
                                 <motion.div 
-                                    className="absolute inset-0 rounded-xl border-2 border-blue-400/80 pointer-events-none shadow-lg"
-                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    className="relative"
                                     animate={{ 
-                                        opacity: focusedField === 'Email' ? 1 : 0,
-                                        scale: focusedField === 'Email' ? 1 : 0.8
+                                        scale: focusedField === 'Email' ? 1.02 : 1,
                                     }}
                                     transition={{ duration: 0.2 }}
-                                />
+                                >
+                                    <input
+                                        type="email"
+                                        name="Email"
+                                        value={formData.Email}
+                                        onChange={onChangeData}
+                                        onFocus={() => setFocusedField('Email')}
+                                        onBlur={() => setFocusedField(null)}
+                                        className="w-full px-4 py-4 bg-white/20 backdrop-blur-xl border border-white/30 rounded-xl focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/30 transition-all duration-300 text-white placeholder-white/60 shadow-inner"
+                                        placeholder="Enter your email"
+                                        required
+                                        disabled={isLoading}
+                                    />
+                                    <motion.div 
+                                        className="absolute inset-0 rounded-xl border-2 border-blue-400/80 pointer-events-none shadow-lg"
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ 
+                                            opacity: focusedField === 'Email' ? 1 : 0,
+                                            scale: focusedField === 'Email' ? 1 : 0.8
+                                        }}
+                                        transition={{ duration: 0.2 }}
+                                    />
+                                </motion.div>
                             </motion.div>
-                        </motion.div>
 
-                        {/* Password Field */}
-                        <motion.div 
-                            className="space-y-2"
-                            variants={itemVariants}
-                        >
-                            <label className="text-sm font-medium text-white/90 block drop-shadow-sm">
-                                Password
-                            </label>
+                            {/* Password Field */}
                             <motion.div 
-                                className="relative"
-                                animate={{ 
-                                    scale: focusedField === 'Password' ? 1.02 : 1,
-                                }}
-                                transition={{ duration: 0.2 }}
+                                className="space-y-2"
+                                variants={itemVariants}
                             >
-                                <input
-                                    type="password"
-                                    name="Password"
-                                    value={formData.Password}
-                                    onChange={onChangeData}
-                                    onFocus={() => setFocusedField('Password')}
-                                    onBlur={() => setFocusedField(null)}
-                                    className="w-full px-4 py-4 bg-white/20 backdrop-blur-xl border border-white/30 rounded-xl focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/30 transition-all duration-300 text-white placeholder-white/60 shadow-inner"
-                                    placeholder="Create a strong password"
-                                    required
-                                />
+                                <label className="text-sm font-medium text-white/90 block drop-shadow-sm">
+                                    Password
+                                </label>
                                 <motion.div 
-                                    className="absolute inset-0 rounded-xl border-2 border-blue-400/80 pointer-events-none shadow-lg"
-                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    className="relative"
                                     animate={{ 
-                                        opacity: focusedField === 'Password' ? 1 : 0,
-                                        scale: focusedField === 'Password' ? 1 : 0.8
+                                        scale: focusedField === 'Password' ? 1.02 : 1,
                                     }}
                                     transition={{ duration: 0.2 }}
-                                />
+                                >
+                                    <input
+                                        type="password"
+                                        name="Password"
+                                        value={formData.Password}
+                                        onChange={onChangeData}
+                                        onFocus={() => setFocusedField('Password')}
+                                        onBlur={() => setFocusedField(null)}
+                                        className="w-full px-4 py-4 bg-white/20 backdrop-blur-xl border border-white/30 rounded-xl focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/30 transition-all duration-300 text-white placeholder-white/60 shadow-inner"
+                                        placeholder="Create a strong password"
+                                        required
+                                        disabled={isLoading}
+                                    />
+                                    <motion.div 
+                                        className="absolute inset-0 rounded-xl border-2 border-blue-400/80 pointer-events-none shadow-lg"
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ 
+                                            opacity: focusedField === 'Password' ? 1 : 0,
+                                            scale: focusedField === 'Password' ? 1 : 0.8
+                                        }}
+                                        transition={{ duration: 0.2 }}
+                                    />
+                                </motion.div>
                             </motion.div>
-                        </motion.div>
 
-                        {/* Submit Button */}
-                        <motion.div variants={itemVariants}>
-                            <motion.button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full py-4 px-6 bg-gradient-to-r from-blue-500/80 to-purple-600/80 backdrop-blur-xl text-white font-semibold rounded-xl shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden border border-white/20"
-                                variants={buttonVariants}
-                                whileHover="hover"
-                                whileTap="tap"
-                            >
-                                <motion.div
-                                    className="absolute inset-0 bg-gradient-to-r from-blue-400/60 to-purple-500/60 backdrop-blur-sm"
-                                    initial={{ x: "-100%" }}
-                                    whileHover={{ x: "0%" }}
-                                    transition={{ duration: 0.5 }}
-                                />
-                                <span className="relative z-10 flex items-center justify-center drop-shadow-lg">
-                                    {isLoading ? (
-                                        <motion.div
-                                            className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
-                                            animate={{ rotate: 360 }}
-                                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                        />
-                                    ) : (
-                                        'Login'
-                                    )}
-                                </span>
-                            </motion.button>
-                        </motion.div>
-                    </form>
+                            {/* Submit Button */}
+                            <motion.div variants={itemVariants}>
+                                <motion.button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full py-4 px-6 bg-gradient-to-r from-blue-500/80 to-purple-600/80 backdrop-blur-xl text-white font-semibold rounded-xl shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden border border-white/20"
+                                    variants={buttonVariants}
+                                    whileHover="hover"
+                                    whileTap="tap"
+                                >
+                                    <motion.div
+                                        className="absolute inset-0 bg-gradient-to-r from-blue-400/60 to-purple-500/60 backdrop-blur-sm"
+                                        initial={{ x: "-100%" }}
+                                        whileHover={{ x: "0%" }}
+                                        transition={{ duration: 0.5 }}
+                                    />
+                                    <span className="relative z-10 flex items-center justify-center drop-shadow-lg">
+                                        {isLoading ? (
+                                            <motion.div
+                                                className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
+                                                animate={{ rotate: 360 }}
+                                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                            />
+                                        ) : (
+                                            'Login'
+                                        )}
+                                    </span>
+                                </motion.button>
+                            </motion.div>
+                        </form>
 
-                    {/* Login Link */}
-                      <motion.div 
-            className="text-center mt-6 pt-6 border-t border-white/20"
-            variants={itemVariants}
-        >
-            <p className="text-white/80 drop-shadow-sm">
-                No account?{' '}
-                <motion.a
-                    href="/sign" // <-- Change this to your signup route
-                    className="text-blue-300 font-medium hover:text-blue-200 transition-colors drop-shadow-sm"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                >
-                    Sign up
-                </motion.a>
-            </p>
-        </motion.div>
+                        {/* Login Link */}
+                        <motion.div 
+                            className="text-center mt-6 pt-6 border-t border-white/20"
+                            variants={itemVariants}
+                        >
+                            <p className="text-white/80 drop-shadow-sm">
+                                No account?{' '}
+                                <motion.a
+                                    href="/sign"
+                                    className="text-blue-300 font-medium hover:text-blue-200 transition-colors drop-shadow-sm"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    Sign up
+                                </motion.a>
+                            </p>
+                        </motion.div>
                     </div>
                 </motion.div>
 
