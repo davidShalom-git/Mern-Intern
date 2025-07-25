@@ -152,7 +152,7 @@ const BlogUpload = () => {
         try {
             console.log("Uploading data...");
             
-            const response = await fetch('http://localhost:2000/api/blog/upload', {
+            const response = await fetch('https://mern-intern-xi.vercel.app/api/blog/upload', {
                 method: 'POST',
                 body: formDataToSend
             });

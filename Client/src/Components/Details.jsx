@@ -11,7 +11,7 @@ const Details = () => {
 
     const fetchBlogDetails = async () => {
         try {
-            const response = await fetch(`http://localhost:2000/api/blog/get/${id}`);
+            const response = await fetch(`https://mern-intern-xi.vercel.app/api/blog/get/${id}`);
             if (!response.ok) {
                 throw new Error('Failed to Fetch Blog Details');
             }

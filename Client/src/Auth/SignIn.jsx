@@ -13,7 +13,7 @@ const SignUp = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [focusedField, setFocusedField] = useState(null)
 
-    const URL = 'http://localhost:2000/api/blog/login'
+    const URL = 'https://mern-intern-xi.vercel.app/api/blog/login'
     const navigate = useNavigate()
 
     const handleLogin = async () => {
