@@ -38,7 +38,7 @@ const Details = ({ blogId }) => {
             setLoading(true);
             setError(null);
 
-            const response = await fetch(`https://mern-intern-xi.vercel.app/api/blog/get/${id}`);
+            const response = await fetch(`https://mern-intern-xi.vercel.app/api/blog/${id}`);
 
             if (!response.ok) {
                 throw new Error('Failed to Fetch Blog Details');

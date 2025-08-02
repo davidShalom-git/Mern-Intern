@@ -73,8 +73,8 @@ connectDB();
 // CORS configuration - more specific for production
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production' 
-        ? ['https://your-frontend-domain.com', 'https://your-vercel-app.vercel.app'] 
-        : ['http://localhost:3000', 'http://localhost:3001'],
+        ? ['https://mernintern2025.vercel.app','http://localhost:1200'] 
+        : ['http://localhost:3000', 'http://localhost:3001',],
     credentials: true,
     optionsSuccessStatus: 200
 };
