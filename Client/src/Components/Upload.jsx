@@ -18,7 +18,7 @@ const BlogUpload = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Default user image URL - you can replace this with your preferred default image
-    const DEFAULT_USER_IMAGE = 'https://via.placeholder.com/150x150/6366f1/ffffff?text=User';
+    const DEFAULT_USER_IMAGE = 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png';
 
     const generateAIContent = async (userContent) => {
         if (!userContent.trim()) {
