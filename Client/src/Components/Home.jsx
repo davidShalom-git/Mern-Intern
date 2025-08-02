@@ -251,7 +251,7 @@ const Home = () => {
               <p className="text-gray-300 text-lg leading-relaxed mb-8">
                 Whether it's a tech breakthrough, a life lesson, a delicious meal, or a cherished memory, we provide the perfect space for your stories to flourish and connect with readers worldwide.
               </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-col flex-wrap gap-4">
                 <div className="flex items-center text-purple-400">
                   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
