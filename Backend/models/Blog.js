@@ -45,7 +45,6 @@ const blogSchema = new mongoose.Schema({
     },
     AuthorImage: {
         type: String,
-        required: true
     },
 }, {
     timestamps: true

@@ -75,9 +75,31 @@ const Details = () => {
                             backdropFilter: "blur(10px)" // enhanced blur for glassmorphic effect
                         }}
                     >
-                        <div className="flex justify-between items-center mb-4">
-                            <div className="text-3xl font-bold text-white">{blogDetails.Title}</div>
-                            <div className="text-sm text-gray-400">Created: {new Date(blogDetails.createdAt).toLocaleDateString()}</div>
+                        {/* Header with Author Info */}
+                        <div className="flex justify-between items-start mb-6">
+                            <div className="flex-1">
+                                <h1 className="text-3xl font-bold text-white mb-2">{blogDetails.Title}</h1>
+                                <p className="text-sm text-purple-300">Topic: {blogDetails.Topic}</p>
+                                <p className="text-sm text-gray-400 mt-1">Created: {new Date(blogDetails.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            
+                            {/* Author Section */}
+                            <div className="flex items-center space-x-3 ml-6">
+                                <div className="text-right">
+                                    <p className="text-sm text-gray-300 font-medium">{blogDetails.Author}</p>
+                                    <p className="text-xs text-gray-500">Author</p>
+                                </div>
+                                {blogDetails.AuthorImage && (
+                                    <img
+                                        src={blogDetails.AuthorImage}
+                                        alt={blogDetails.Author || 'Author'}
+                                        className="w-12 h-12 rounded-full object-cover border-2 border-purple-400/50 shadow-lg"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                        }}
+                                    />
+                                )}
+                            </div>
                         </div>
 
                         {images.length > 0 && (
@@ -135,8 +157,9 @@ const Details = () => {
                             </div>
                         )}
 
-                        <p className="mt-4 text-sm text-purple-300">Topic: {blogDetails.Topic}</p>
-                        <p className="text-gray-300 mb-6 leading-relaxed">{blogDetails.Content}</p>
+                        <div className="prose prose-invert max-w-none">
+                            <p className="text-gray-300 leading-relaxed text-base">{blogDetails.Content}</p>
+                        </div>
                     </div>
                 ) : (
                     <div className="flex justify-center items-center min-h-screen">
@@ -145,9 +168,8 @@ const Details = () => {
                 )}
             </div>
 
-     
-     
-          {/* Image Modal */}         {isModalOpen && (
+            {/* Image Modal */}
+            {isModalOpen && (
                 <div className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50">
                     <div className="relative max-w-4xl max-h-screen p-4">
                         <button

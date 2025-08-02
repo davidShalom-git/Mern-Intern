@@ -17,6 +17,9 @@ const BlogUpload = () => {
     const [isGeneratingAI, setIsGeneratingAI] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Default user image URL - you can replace this with your preferred default image
+    const DEFAULT_USER_IMAGE = 'https://via.placeholder.com/150x150/6366f1/ffffff?text=User';
+
     const generateAIContent = async (userContent) => {
         if (!userContent.trim()) {
             return "Please write some content first, and I'll help you improve it!";
@@ -137,10 +140,18 @@ const BlogUpload = () => {
         }));
     };
 
+    const removeAuthorImage = () => {
+        setFormData(prev => ({ ...prev, AuthorImage: null }));
+        // Reset the file input
+        const fileInput = document.querySelector('input[name="AuthorImage"]');
+        if (fileInput) fileInput.value = '';
+    };
+
+    // Updated validation - AuthorImage is no longer required
     const validateForm = () => {
         const newErrors = {};
         if (!formData.Title.trim()) newErrors.Title = "Title is required";
-        if (!formData.Topic.trim()) newErrors.Topic = "Topic is required";
+        if (!formData.Topic.trim()) newErrors.Topic = "Topic/Category is required";
         if (!formData.Content.trim()) newErrors.Content = "Content is required";
         if (!formData.Author.trim()) newErrors.Author = "Author name is required";
 
@@ -190,8 +201,12 @@ const BlogUpload = () => {
         formDataToSend.append('Content', formData.Content);
         formDataToSend.append('Author', formData.Author);
 
+        // Handle AuthorImage - use default if none provided
         if (formData.AuthorImage instanceof File) {
             formDataToSend.append('AuthorImage', formData.AuthorImage);
+        } else {
+            // You can either send the default image URL or let the backend handle it
+            formDataToSend.append('AuthorImageDefault', DEFAULT_USER_IMAGE);
         }
 
         formData.Images.forEach((imageObj) => {
@@ -338,23 +353,23 @@ const BlogUpload = () => {
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
                                     <Tag className="w-5 h-5 text-purple-400" />
-                                    <label className="text-lg font-semibold text-white">Topic</label>
+                                    <label className="text-lg font-semibold text-white">Category</label>
                                 </div>
-                                <select
+                                <input
+                                    type="text"
                                     name="Topic"
+                                    placeholder="Enter any category (e.g., Technology, Travel, Food, etc.)"
                                     value={formData.Topic}
                                     onChange={handleInputChange}
-                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all outline-none bg-gray-900/50 text-white ${errors.Topic
+                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all outline-none bg-gray-900/50 text-white placeholder-gray-400 ${errors.Topic
                                         ? 'border-red-400 focus:border-red-400'
                                         : 'border-gray-600/50 focus:border-purple-400'
                                         }`}
-                                >
-                                    <option value="" className="bg-gray-900">Select Topic</option>
-                                    {['Technology', 'LifeStyle', 'Achievements', 'Food', 'Memories', 'Songs'].map((topic) => (
-                                        <option key={topic} value={topic} className="bg-gray-900">{topic}</option>
-                                    ))}
-                                </select>
+                                />
                                 {errors.Topic && <p className="text-red-400 text-sm mt-1">{errors.Topic}</p>}
+                                <p className="text-xs text-gray-400 mt-1">
+                                    💡 You can enter any category of your choice
+                                </p>
                             </div>
 
                             <div>
@@ -419,12 +434,37 @@ const BlogUpload = () => {
                             </p>
                         </div>
 
+                        {/* Author Image Section - Now Optional */}
                         <div>
                             <div className="flex items-center gap-2 mb-2">
                                 <User className="w-5 h-5 text-purple-400" />
                                 <label className="text-lg font-semibold text-white">Author Image</label>
-                                <span className="text-sm text-gray-400">(Optional)</span>
+                                <span className="text-sm text-gray-400">(Optional - Default image will be used if not provided)</span>
                             </div>
+                            
+                            {/* Preview of selected or default image */}
+                            <div className="flex items-center gap-4 mb-3">
+                                <div className="relative">
+                                    <img
+                                        src={formData.AuthorImage ? URL.createObjectURL(formData.AuthorImage) : DEFAULT_USER_IMAGE}
+                                        alt="Author preview"
+                                        className="w-16 h-16 rounded-full object-cover border-2 border-purple-400/50"
+                                    />
+                                    {formData.AuthorImage && (
+                                        <button
+                                            type="button"
+                                            onClick={removeAuthorImage}
+                                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="text-sm text-gray-300">
+                                    {formData.AuthorImage ? 'Custom image selected' : 'Using default user image'}
+                                </div>
+                            </div>
+
                             <input
                                 type="file"
                                 name="AuthorImage"
@@ -432,6 +472,9 @@ const BlogUpload = () => {
                                 onChange={handleFileChange}
                                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-600/50 focus:border-purple-400 transition-all outline-none bg-gray-900/50 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30"
                             />
+                            <p className="text-xs text-gray-400 mt-1">
+                                💡 Leave empty to use the default user avatar
+                            </p>
                         </div>
 
                         <button
