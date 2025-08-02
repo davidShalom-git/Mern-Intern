@@ -19,10 +19,6 @@ const upload = multer({
     }
 });
 
-// FIXED: Error handler middleware should be placed after all routes
-// Move this to the end of the file
-
-// POST route for uploading blogs
 router.post('/upload', upload.fields([
     { name: 'AuthorImage', maxCount: 1 },
     { name: 'Images', maxCount: 4 }
@@ -109,104 +105,7 @@ router.post('/upload', upload.fields([
     }
 });
 
-// GET route for all blogs
-router.get('/', async (req, res) => {  // FIXED: Changed from '/get' to '/'
-    try {
-        const getBlogs = await Blog.find({})
-        if (!getBlogs || getBlogs.length === 0) {
-            return res.status(404).json({ message: "No Blogs found" })
-        }
 
-        res.status(200).json({
-            message: "Blogs retrieved successfully",
-            count: getBlogs.length,
-            blogs: getBlogs
-        })
-
-    } catch (error) {
-        console.error('Get blogs error:', error);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-})
-
-// FIXED: More specific route should come after general routes
-// GET route for single blog by ID
-router.get('/:id', async (req, res) => {  // FIXED: Changed from '/get/:id' to '/:id'
-    try {
-        const { id } = req.params;
-
-        // Validate MongoDB ObjectId format
-        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ message: "Invalid blog ID format" });
-        }
-
-        const getSingleBlog = await Blog.findById(id);
-        if (!getSingleBlog) {
-            return res.status(404).json({ message: "Blog not found" });
-        }
-
-        res.status(200).json({ 
-            message: "Blog retrieved successfully",
-            blog: getSingleBlog 
-        });
-    } catch (error) {
-        console.error('Get single blog error:', error);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
-});
-
-// PUT route for updating blog
-router.put('/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updates = req.body;
-
-        // Validate MongoDB ObjectId format
-        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ message: "Invalid blog ID format" });
-        }
-
-        const updatedBlog = await Blog.findByIdAndUpdate(id, updates, { new: true });
-        if (!updatedBlog) {
-            return res.status(404).json({ message: "Blog not found" });
-        }
-
-        res.status(200).json({
-            message: "Blog updated successfully",
-            blog: updatedBlog
-        });
-    } catch (error) {
-        console.error('Update blog error:', error);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
-});
-
-// DELETE route for deleting blog
-router.delete('/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        // Validate MongoDB ObjectId format
-        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ message: "Invalid blog ID format" });
-        }
-
-        const deletedBlog = await Blog.findByIdAndDelete(id);
-        if (!deletedBlog) {
-            return res.status(404).json({ message: "Blog not found" });
-        }
-
-        res.status(200).json({
-            message: "Blog deleted successfully",
-            blog: deletedBlog
-        });
-    } catch (error) {
-        console.error('Delete blog error:', error);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
-});
-
-// FIXED: Multer error handler middleware moved to the end
 router.use((error, req, res, next) => {
     if (error instanceof multer.MulterError) {
         if (error.code === 'LIMIT_FILE_SIZE') {
@@ -223,6 +122,37 @@ router.use((error, req, res, next) => {
     }
 
     next(error);
+});
+
+
+
+router.get('/get', async (req, res) => {
+    try {
+        const getBlogs = await Blog.find({})
+        if (!getBlogs) {
+            return res.status(404).json({ message: "No Blogs" })
+        }
+
+        res.status(200).json(getBlogs)
+
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error" })
+    }
+})
+
+router.get('/get/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const getSingleBlog = await Blog.findById(id);
+        if (!getSingleBlog) {
+            return res.status(404).json({ message: "Blog not found" });
+        }
+
+        res.status(200).json({ getSingleBlog });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error" });
+    }
 });
 
 module.exports = router;

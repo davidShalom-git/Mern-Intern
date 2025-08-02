@@ -28,7 +28,7 @@ const Blogs = () => {
             setLoading(true);
             setError(null);
 
-            const response = await fetch('https://mern-intern-xi.vercel.app/api/blog');
+            const response = await fetch('https://mern-intern-xi.vercel.app/api/blog/get');
             const data = await response.json();
 
             const blogData = Array.isArray(data) ? data : data.getBlogs || [];
