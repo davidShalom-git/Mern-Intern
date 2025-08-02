@@ -30,9 +30,10 @@ router.post('/upload', upload.fields([
     try {
         const { Title, Topic, Content, Author } = req.body;
 
-        if (!Title || !Topic || !Content || !Author || !req.files['AuthorImage']) {
+        // Updated validation - AuthorImage is now optional
+        if (!Title || !Topic || !Content || !Author) {
             return res.status(400).json({
-                message: "Title, Topic, Content, Author, and AuthorImage are required",
+                message: "Title, Topic, Content, and Author are required",
                 received: { Title, Topic, Content, Author }
             });
         }
@@ -50,12 +51,21 @@ router.post('/upload', upload.fields([
             isPrimary: index === 0
         }));
 
+        // Handle AuthorImage - use default if none provided
+        let authorImagePath;
+        if (req.files['AuthorImage'] && req.files['AuthorImage'][0]) {
+            authorImagePath = req.files['AuthorImage'][0].path;
+        } else {
+            // Use default image URL
+            authorImagePath = 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png';
+        }
+
         const blog = new Blog({
             Title,
             Topic,
             Content,
             Author,
-            AuthorImage: req.files['AuthorImage'][0].path,
+            AuthorImage: authorImagePath,
             Images: images,
             Image: images[0].url
         });
@@ -67,7 +77,7 @@ router.post('/upload', upload.fields([
         }
 
         res.status(201).json({
-            message: "Blog with author created successfully",
+            message: "Blog created successfully",
             blog: newBlog
         });
 

@@ -147,13 +147,14 @@ const BlogUpload = () => {
         if (fileInput) fileInput.value = '';
     };
 
-    // Updated validation - AuthorImage is no longer required
+    // Updated validation - AuthorImage is no longer required, but at least one blog image is needed
     const validateForm = () => {
         const newErrors = {};
         if (!formData.Title.trim()) newErrors.Title = "Title is required";
         if (!formData.Topic.trim()) newErrors.Topic = "Topic/Category is required";
         if (!formData.Content.trim()) newErrors.Content = "Content is required";
         if (!formData.Author.trim()) newErrors.Author = "Author name is required";
+        if (formData.Images.length === 0) newErrors.Images = "At least one blog image is required";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -188,6 +189,18 @@ const BlogUpload = () => {
         }
     };
 
+    // Helper function to convert URL to File
+    const urlToFile = async (url, filename = 'default-avatar.png') => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new File([blob], filename, { type: blob.type });
+        } catch (error) {
+            console.error('Error converting URL to file:', error);
+            return null;
+        }
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -201,12 +214,23 @@ const BlogUpload = () => {
         formDataToSend.append('Content', formData.Content);
         formDataToSend.append('Author', formData.Author);
 
-        // Handle AuthorImage - use default if none provided
+        // Handle AuthorImage - always send a file for AuthorImage field
         if (formData.AuthorImage instanceof File) {
             formDataToSend.append('AuthorImage', formData.AuthorImage);
         } else {
-            // You can either send the default image URL or let the backend handle it
-            formDataToSend.append('AuthorImageDefault', DEFAULT_USER_IMAGE);
+            // Convert default image URL to file and send it
+            try {
+                const defaultImageFile = await urlToFile(DEFAULT_USER_IMAGE, 'default-avatar.png');
+                if (defaultImageFile) {
+                    formDataToSend.append('AuthorImage', defaultImageFile);
+                } else {
+                    // Fallback: send empty string or handle as needed
+                    formDataToSend.append('AuthorImage', '');
+                }
+            } catch (error) {
+                console.error('Error handling default image:', error);
+                formDataToSend.append('AuthorImage', '');
+            }
         }
 
         formData.Images.forEach((imageObj) => {
@@ -277,6 +301,7 @@ const BlogUpload = () => {
                                 <Camera className="w-5 h-5 text-purple-400" />
                                 <label className="text-lg font-semibold text-white">Blog Images</label>
                                 <span className="text-sm text-gray-400">({formData.Images.length}/4)</span>
+                                <span className="text-sm text-red-400">*Required</span>
                             </div>
 
                             {formData.Images.length > 0 && (
@@ -304,7 +329,9 @@ const BlogUpload = () => {
                                 <div
                                     className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${dragActive
                                         ? 'border-purple-400 bg-purple-500/10'
-                                        : 'border-gray-600/50 hover:border-purple-400/70 hover:bg-gray-800/30'
+                                        : errors.Images 
+                                            ? 'border-red-400 bg-red-500/10'
+                                            : 'border-gray-600/50 hover:border-purple-400/70 hover:bg-gray-800/30'
                                         }`}
                                     onDragEnter={handleDrag}
                                     onDragLeave={handleDrag}
@@ -328,6 +355,7 @@ const BlogUpload = () => {
                                     </label>
                                 </div>
                             )}
+                            {errors.Images && <p className="text-red-400 text-sm mt-1">{errors.Images}</p>}
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-6">
