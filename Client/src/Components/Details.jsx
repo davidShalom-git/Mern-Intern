@@ -250,38 +250,26 @@ const Details = ({ blogId }) => {
                             </div>
                         )}
 
-                        {/* Enhanced Content Section with Proper Paragraph Spacing */}
-                        <div className="bg-gray-800/60 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-purple-500/10 rounded-3xl p-8">
-                            <div className="prose prose-invert max-w-none">
-                                <div className="space-y-8"> {/* Moderate spacing like Word document */}
-                                    {paragraphs.length > 0 ? (
-                                        paragraphs.map((paragraph, index) => (
-                                            <div
-                                                key={index}
-                                                className="group"
-                                            >
-                                                <p className="text-gray-200 leading-relaxed text-lg font-light tracking-wide first-letter:text-3xl first-letter:font-semibold first-letter:text-purple-300 first-letter:mr-1 first-letter:float-left first-letter:leading-[0.8] hover:text-white transition-colors duration-300 mb-6"> {/* Reduced mb to 6 for Word-like spacing */}
-                                                    {paragraph.trim()}
-                                                </p>
-                                                {index < paragraphs.length - 1 && (
-                                                    <div className="mt-4 mb-4 flex justify-center"> {/* Reduced margins for subtle separation */}
-                                                        <div className="flex items-center gap-2"> {/* Reduced gap */}
-                                                            <div className="w-8 h-px bg-gradient-to-r from-transparent via-purple-400/30 to-purple-400/30"></div> {/* Smaller, more subtle separator */}
-                                                            <div className="w-1.5 h-1.5 bg-purple-400/30 rounded-full"></div> {/* Smaller dot */}
-                                                            <div className="w-8 h-px bg-gradient-to-r from-purple-400/30 to-transparent"></div> {/* Smaller, more subtle separator */}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-gray-200 leading-relaxed text-lg font-light tracking-wide first-letter:text-3xl first-letter:font-semibold first-letter:text-purple-300 first-letter:mr-1 first-letter:float-left first-letter:leading-[0.8]">
-                                            {blogDetails.Content}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                     <div className="bg-gray-800/60 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-purple-500/10 rounded-3xl p-8">
+  <div className="prose prose-invert max-w-none">
+    <div className="space-y-6"> {/* Natural spacing between paragraphs */}
+      {paragraphs.length > 0 ? (
+        paragraphs.map((paragraph, index) => (
+          <p
+            key={index}
+            className="text-gray-200 leading-relaxed text-lg font-light tracking-wide mb-6 hover:text-white transition-colors duration-300"
+          >
+            {paragraph.trim()}
+          </p>
+        ))
+      ) : (
+        <p className="text-gray-200 leading-relaxed text-lg font-light tracking-wide">
+          {blogDetails.Content}
+        </p>
+      )}
+    </div>
+  </div>
+</div>
                     </div>
                 ) : (
                     <div className="flex flex-col justify-center items-center min-h-screen text-center">
