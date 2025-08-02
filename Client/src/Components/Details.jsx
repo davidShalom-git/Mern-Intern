@@ -250,26 +250,26 @@ const Details = ({ blogId }) => {
                             </div>
                         )}
 
-                     <div className="bg-gray-800/60 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-purple-500/10 rounded-3xl p-8">
-  <div className="prose prose-invert max-w-none">
-    <div className="space-y-6"> {/* Natural spacing between paragraphs */}
-      {paragraphs.length > 0 ? (
-        paragraphs.map((paragraph, index) => (
-          <p
-            key={index}
-            className="text-gray-200 leading-relaxed text-lg font-light tracking-wide mb-6 hover:text-white transition-colors duration-300"
-          >
-            {paragraph.trim()}
-          </p>
-        ))
-      ) : (
-        <p className="text-gray-200 leading-relaxed text-lg font-light tracking-wide">
-          {blogDetails.Content}
-        </p>
-      )}
-    </div>
-  </div>
-</div>
+                        <div className="bg-gray-800/60 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-purple-500/10 rounded-3xl p-8">
+                            <div className="prose prose-invert max-w-none">
+                                <div className="space-y-6"> {/* Natural spacing between paragraphs */}
+                                    {paragraphs.length > 0 ? (
+                                        paragraphs.map((paragraph, index) => (
+                                            <p
+                                                key={index}
+                                                className="text-gray-200 leading-relaxed text-lg font-light tracking-wide mb-6 hover:text-white transition-colors duration-300"
+                                            >
+                                                {paragraph.trim()}
+                                            </p>
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-200 leading-relaxed text-lg font-light tracking-wide">
+                                            {blogDetails.Content}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 ) : (
                     <div className="flex flex-col justify-center items-center min-h-screen text-center">
