@@ -1,6 +1,24 @@
 import React, { useState } from 'react';
-import { Upload, X, Camera, User, FileText, Tag, Sparkles, Loader2 } from 'lucide-react';
+import { Upload, X, Camera, User, FileText, Tag, Sparkles, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import Nav from './Nav';
+
+// Toast Component
+const Toast = ({ message, type, isVisible, onClose }) => {
+    if (!isVisible) return null;
+
+    const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+    const Icon = type === 'success' ? CheckCircle : AlertCircle;
+
+    return (
+        <div className={`fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center gap-3 animate-in slide-in-from-right duration-300`}>
+            <Icon className="w-5 h-5" />
+            <span>{message}</span>
+            <button onClick={onClose} className="ml-2 hover:opacity-70">
+                <X className="w-4 h-4" />
+            </button>
+        </div>
+    );
+};
 
 const BlogUpload = () => {
     const [formData, setFormData] = useState({
@@ -16,30 +34,59 @@ const BlogUpload = () => {
     const [errors, setErrors] = useState({});
     const [isGeneratingAI, setIsGeneratingAI] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [toast, setToast] = useState({ message: '', type: '', isVisible: false });
 
-    // Default user image URL - you can replace this with your preferred default image
+    // Default user image URL
     const DEFAULT_USER_IMAGE = 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png';
 
-    const generateAIContent = async (userContent) => {
-        if (!userContent.trim()) {
-            return "Please write some content first, and I'll help you improve it!";
+    const showToast = (message, type = 'info') => {
+        setToast({ message, type, isVisible: true });
+        setTimeout(() => {
+            setToast(prev => ({ ...prev, isVisible: false }));
+        }, 5000);
+    };
+
+    const generateAIContent = async (title, userContent = "") => {
+        if (!title.trim()) {
+            showToast("Please enter a title first to generate AI content!", 'error');
+            return null;
         }
 
         const GEMINI_API_KEY = 'AIzaSyDREfqqyFDXWOtK5cynTLXOgS3f6m6XAJw';
         const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
-        const prompt = `Please improve the following blog content by:
-                    1. Correcting any grammar, spelling, and punctuation errors
-                    2. Improving sentence structure and clarity
-                    3. Making it more engaging and readable
-                    4. Ensuring proper capitalization and formatting
-                    5. Adding transitions between ideas where needed
-                    6. Maintaining the original meaning and tone
+        let prompt;
+        
+        if (userContent.trim()) {
+            // If user has written content, improve it
+            prompt = `Please improve the following blog content by:
+                1. Correcting any grammar, spelling, and punctuation errors
+                2. Improving sentence structure and clarity
+                3. Making it more engaging and readable
+                4. Ensuring proper capitalization and formatting
+                5. Adding transitions between ideas where needed
+                6. Maintaining the original meaning and tone
+                7. Formatting it with proper paragraphs separated by line breaks
 
-            Original content:
-            ${userContent}
+                Original content:
+                ${userContent}
 
-            Please return only the improved content without any additional explanations or comments.`;
+                Please return only the improved content with proper paragraph formatting.`;
+        } else {
+            // If no content, generate based on title
+            prompt = `Write a comprehensive and engaging blog post about: "${title}"
+
+                Please create:
+                1. An engaging introduction paragraph
+                2. 3-4 main body paragraphs with detailed content
+                3. A conclusion paragraph
+                4. Each paragraph should be well-structured and informative
+                5. Use proper grammar, spelling, and punctuation
+                6. Make it engaging and readable for a general audience
+                7. Separate each paragraph with a line break
+
+                Write the content in a professional yet conversational tone. Do not include any titles or headings, just return the paragraph content separated by line breaks.`;
+        }
 
         try {
             const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -54,7 +101,7 @@ const BlogUpload = () => {
                         }]
                     }],
                     generationConfig: {
-                        temperature: 0.3,
+                        temperature: 0.7,
                         topK: 40,
                         topP: 0.95,
                         maxOutputTokens: 2048,
@@ -69,30 +116,49 @@ const BlogUpload = () => {
             const data = await response.json();
 
             if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-                return data.candidates[0].content.parts[0].text.trim();
+                const generatedText = data.candidates[0].content.parts[0].text.trim();
+                
+                // Format the content to ensure proper paragraph spacing
+                const formattedContent = generatedText
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0)
+                    .join('\n\n');
+                
+                return formattedContent;
             } else {
                 throw new Error('Invalid response format from Gemini API');
             }
         } catch (error) {
-            console.error('Gemini API Error:', error)
+            console.error('Gemini API Error:', error);
+            throw error;
         }
     };
 
     const handleAIGenerate = async () => {
         setIsGeneratingAI(true);
         try {
-            const improvedContent = await generateAIContent(formData.Content);
-            setFormData(prevData => ({
-                ...prevData,
-                Content: improvedContent
-            }));
+            const improvedContent = await generateAIContent(formData.Title, formData.Content);
+            if (improvedContent) {
+                setFormData(prevData => ({
+                    ...prevData,
+                    Content: improvedContent
+                }));
 
-            if (errors.Content) {
-                setErrors(prev => ({ ...prev, Content: "" }));
+                if (errors.Content) {
+                    setErrors(prev => ({ ...prev, Content: "" }));
+                }
+
+                showToast(
+                    formData.Content.trim() 
+                        ? "Content improved successfully!" 
+                        : "AI content generated successfully!", 
+                    'success'
+                );
             }
         } catch (error) {
             console.error('AI generation failed:', error);
-            alert('AI content generation failed. Please try again.');
+            showToast('AI content generation failed. Please try again.', 'error');
         } finally {
             setIsGeneratingAI(false);
         }
@@ -111,6 +177,7 @@ const BlogUpload = () => {
                 ...prevData,
                 Images: [...prevData.Images, ...imagesArray].slice(0, 4)
             }));
+            showToast(`${files.length} image(s) uploaded successfully!`, 'success');
         }
     };
 
@@ -130,6 +197,7 @@ const BlogUpload = () => {
         const { name, files } = e.target;
         if (name === 'AuthorImage' && files[0]) {
             setFormData(prev => ({ ...prev, AuthorImage: files[0] }));
+            showToast('Author image updated successfully!', 'success');
         }
     };
 
@@ -138,16 +206,16 @@ const BlogUpload = () => {
             ...prevData,
             Images: prevData.Images.filter((_, index) => index !== indexToRemove)
         }));
+        showToast('Image removed successfully!', 'success');
     };
 
     const removeAuthorImage = () => {
         setFormData(prev => ({ ...prev, AuthorImage: null }));
-        // Reset the file input
         const fileInput = document.querySelector('input[name="AuthorImage"]');
         if (fileInput) fileInput.value = '';
+        showToast('Author image removed successfully!', 'success');
     };
 
-    // Updated validation - AuthorImage is no longer required, but at least one blog image is needed
     const validateForm = () => {
         const newErrors = {};
         if (!formData.Title.trim()) newErrors.Title = "Title is required";
@@ -171,7 +239,7 @@ const BlogUpload = () => {
             
             const data = await response.json();
             console.log("Data uploaded successfully:", data);
-            alert("Blog uploaded successfully!");
+            showToast("Blog uploaded successfully!", 'success');
             
             // Reset form after successful upload
             setFormData({
@@ -185,11 +253,10 @@ const BlogUpload = () => {
             
         } catch (error) {
             console.error("Error uploading data:", error);
-            alert("Error uploading blog. Please try again.");
+            showToast("Error uploading blog. Please try again.", 'error');
         }
     };
 
-    // Helper function to convert URL to File
     const urlToFile = async (url, filename = 'default-avatar.png') => {
         try {
             const response = await fetch(url);
@@ -204,7 +271,10 @@ const BlogUpload = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        if (!validateForm()) return;
+        if (!validateForm()) {
+            showToast("Please fill in all required fields!", 'error');
+            return;
+        }
 
         setIsSubmitting(true);
 
@@ -214,17 +284,14 @@ const BlogUpload = () => {
         formDataToSend.append('Content', formData.Content);
         formDataToSend.append('Author', formData.Author);
 
-        // Handle AuthorImage - always send a file for AuthorImage field
         if (formData.AuthorImage instanceof File) {
             formDataToSend.append('AuthorImage', formData.AuthorImage);
         } else {
-            // Convert default image URL to file and send it
             try {
                 const defaultImageFile = await urlToFile(DEFAULT_USER_IMAGE, 'default-avatar.png');
                 if (defaultImageFile) {
                     formDataToSend.append('AuthorImage', defaultImageFile);
                 } else {
-                    // Fallback: send empty string or handle as needed
                     formDataToSend.append('AuthorImage', '');
                 }
             } catch (error) {
@@ -270,12 +337,22 @@ const BlogUpload = () => {
                 ...prevData,
                 Images: [...prevData.Images, ...imagesArray].slice(0, 4)
             }));
+            showToast(`${files.length} image(s) uploaded successfully!`, 'success');
         }
     };
 
     return (
         <div className='min-h-screen mt-22 bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 py-12 px-4 relative'>
             <Nav />
+            
+            {/* Toast Notification */}
+            <Toast 
+                message={toast.message} 
+                type={toast.type} 
+                isVisible={toast.isVisible} 
+                onClose={() => setToast(prev => ({ ...prev, isVisible: false }))}
+            />
+            
             {/* Animated grid */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black_40%,transparent_100%)]"></div>
 
@@ -429,10 +506,10 @@ const BlogUpload = () => {
                             <div className="relative">
                                 <textarea
                                     name="Content"
-                                    placeholder="Write your blog content here..."
+                                    placeholder="Write your blog content here or leave empty and click 'Generate AI' to create content based on your title..."
                                     value={formData.Content}
                                     onChange={handleInputChange}
-                                    rows={6}
+                                    rows={8}
                                     className={`w-full px-4 py-3 pb-16 rounded-xl border-2 transition-all outline-none resize-none bg-gray-900/50 text-white placeholder-gray-400 ${errors.Content
                                         ? 'border-red-400 focus:border-red-400'
                                         : 'border-gray-600/50 focus:border-purple-400'
@@ -443,7 +520,7 @@ const BlogUpload = () => {
                                 <button
                                     type="button"
                                     onClick={handleAIGenerate}
-                                    disabled={isGeneratingAI}
+                                    disabled={isGeneratingAI || !formData.Title.trim()}
                                     className="absolute bottom-3 right-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                                 >
                                     <div className="flex items-center gap-2">
@@ -458,7 +535,7 @@ const BlogUpload = () => {
                             </div>
                             {errors.Content && <p className="text-red-400 text-sm mt-1">{errors.Content}</p>}
                             <p className="text-xs text-gray-400 mt-1">
-                                💡 Tip: Write your content and click "Generate AI" to improve grammar, clarity, and structure!
+                                💡 Tip: Enter a title first, then either write content and improve it with AI, or leave it empty to generate completely new content based on your title!
                             </p>
                         </div>
 
