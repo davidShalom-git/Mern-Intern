@@ -4,8 +4,6 @@ const app = express()
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
-const blog = require('./router/Blog')
-const User = require('./router/User')
 
 // Enhanced MongoDB connection with proper error handling and timeouts
 const connectDB = async () => {
@@ -111,9 +109,27 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-// API routes
-app.use('/api/blog', blog);
-app.use('/api/user', User); // Fixed: changed from '/api/blog' to '/api/user'
+// SOLUTION 1: Try-catch wrapper for router imports to identify problematic routes
+console.log('Loading routes...');
+try {
+    console.log('Loading blog routes...');
+    const blog = require('./router/Blog');
+    app.use('/api/blog', blog);
+    console.log('✅ Blog routes loaded successfully');
+} catch (error) {
+    console.error('❌ Error loading blog routes:', error.message);
+    console.error('Stack:', error.stack);
+}
+
+try {
+    console.log('Loading user routes...');
+    const User = require('./router/User');
+    app.use('/api/user', User);
+    console.log('✅ User routes loaded successfully');
+} catch (error) {
+    console.error('❌ Error loading user routes:', error.message);
+    console.error('Stack:', error.stack);
+}
 
 // Root endpoint
 app.get('/', (req, res) => {
