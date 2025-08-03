@@ -18,13 +18,13 @@ const connectDB = async () => {
         const conn = await mongoose.connect(process.env.MONGODB_URL, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-            socketTimeoutMS: 45000, // Close sockets after 45s
-            maxPoolSize: 10, // Maintain up to 10 socket connections
-            minPoolSize: 5, // Maintain a minimum of 5 socket connections
-            maxIdleTimeMS: 30000, // Close connections after 30s of inactivity
-            bufferCommands: false, // Disable mongoose buffering
-            bufferMaxEntries: 0, // Disable mongoose buffering
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+            maxPoolSize: 10,
+            minPoolSize: 5,
+            maxIdleTimeMS: 30000,
+            bufferCommands: false,
+            bufferMaxEntries: 0,
         })
 
         console.log(`MongoDB Connected: ${conn.connection.host}`)
@@ -37,6 +37,69 @@ const connectDB = async () => {
 // Connect to database
 connectDB()
 
+// CORS Configuration - FIXED
+const corsOptions = {
+    origin: [
+        'https://mernintern2025.vercel.app', // Your frontend domain
+        'http://localhost:3000', // Local development
+        'http://localhost:5173', // Vite default port
+        'http://localhost:5174', // Alternative Vite port
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+        'Content-Type', 
+        'Authorization', 
+        'X-Requested-With',
+        'Accept',
+        'Origin'
+    ],
+    credentials: true, // Allow cookies/auth headers
+    optionsSuccessStatus: 200 // For legacy browser support
+}
+
+// Apply CORS middleware BEFORE other middleware
+app.use(cors(corsOptions))
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions))
+
+// Other middleware
+app.use(bodyParser.json({ limit: '10mb' }))
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }))
+
+// Add request timeout middleware
+app.use((req, res, next) => {
+    req.setTimeout(30000)
+    next()
+})
+
+// Add logging middleware for debugging
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.get('origin')}`)
+    next()
+})
+
+// Routes
+app.use('/api/blog', blog)
+app.use('/api/blog', User)
+
+app.get('/', (req, res) => {
+    res.json({ 
+        message: 'API is running successfully!',
+        timestamp: new Date().toISOString(),
+        cors: 'enabled'
+    })
+})
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err)
+    res.status(500).json({ 
+        message: 'Internal Server Error', 
+        error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    })
+})
+
 // Handle connection events
 mongoose.connection.on('connected', () => {
     console.log('Mongoose connected to MongoDB')
@@ -48,33 +111,6 @@ mongoose.connection.on('error', (err) => {
 
 mongoose.connection.on('disconnected', () => {
     console.log('Mongoose disconnected')
-})
-
-// Middleware
-app.use(cors())
-app.use(bodyParser.json())
-
-// Add request timeout middleware
-app.use((req, res, next) => {
-    req.setTimeout(30000) // 30 second timeout
-    next()
-})
-
-// Routes
-app.use('/api/blog', blog)
-app.use('/api/blog', User)
-
-app.get('/', (req, res) => {
-    res.json({ message: 'API is running successfully!' })
-})
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err)
-    res.status(500).json({ 
-        message: 'Internal Server Error', 
-        error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
-    })
 })
 
 module.exports = app
