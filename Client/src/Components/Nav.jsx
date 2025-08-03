@@ -38,7 +38,7 @@ const Nav = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         setToken(null);
-        setIsMenuOpen(false); // Close mobile menu
+        setIsMenuOpen(false); 
         navigate('/');
     };
 
