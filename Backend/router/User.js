@@ -4,24 +4,29 @@ const User = require('../models/Users')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
-
-
-router.post('/register',async(req,res)=> {
-    const {Name,Email,Password} = req.body
+router.post('/register', async (req, res) => {
+    const { Name, Email, Password } = req.body
 
     try {
+        console.log('Registration attempt:', { Name, Email, Password: '***' })
 
-        if(!Name || !Email || !Password){
-            return res.status(400).json({message: "All Fields are Required"})
+        if (!Name || !Email || !Password) {
+            return res.status(400).json({ message: "All Fields are Required" })
         }
 
-        const exisitingUser = await User.findOne({Email})
-
-        if(exisitingUser){
-            return res.status(404).json({message: "Email Already Exists"})
+        // Check if JWT_SECRET exists
+        if (!process.env.JWT_SECRET) {
+            console.error('JWT_SECRET is not defined in environment variables')
+            return res.status(500).json({ message: "Server configuration error" })
         }
 
-        const hashPassword = await bcrypt.hash(Password,10)
+        const existingUser = await User.findOne({ Email })
+
+        if (existingUser) {
+            return res.status(409).json({ message: "Email Already Exists" }) // Changed from 404 to 409
+        }
+
+        const hashPassword = await bcrypt.hash(Password, 10)
 
         const Users = new User({
             Name,
@@ -29,52 +34,63 @@ router.post('/register',async(req,res)=> {
             Password: hashPassword
         })
 
-        console.log(Name)
-        console.log(Email)
-        console.log(Password)
+        console.log('Creating user with data:', { Name, Email })
 
         const users = await Users.save()
-        if(!users){
-            return res.status(400).json({message: "No User Created"})
+        if (!users) {
+            return res.status(400).json({ message: "No User Created" })
         }
-        console.log(users);
+        console.log('User created successfully:', users._id)
 
-        const token = jwt.sign({id: users._id},process.env.JWT_SECRET,{expiresIn: '30d'})
+        const token = jwt.sign({ id: users._id }, process.env.JWT_SECRET, { expiresIn: '30d' })
 
-        res.status(201).json({message: "User Created Successfully",token})
-        
+        res.status(201).json({ message: "User Created Successfully", token })
+
     } catch (error) {
-        res.status(500).json({message: "Internal Server Error"})
+        console.error('Registration error:', error) // Log the actual error
+        res.status(500).json({ message: "Internal Server Error", error: error.message })
     }
 })
 
-
-router.post('/login', async(req,res)=> {
-    const {Email,Password} = req.body
+router.post('/login', async (req, res) => {
+    const { Email, Password } = req.body
 
     try {
+        console.log('Login attempt for email:', Email)
 
-        if(!Email || !Password){
-            return res.status(400).json({message: "All fields are required"})
+        if (!Email || !Password) {
+            return res.status(400).json({ message: "All fields are required" })
         }
 
-        const getUser = await User.findOne({Email})
-        if(!getUser){
-            return res.status(400).json({message: "User not Found"})
+        // Check if JWT_SECRET exists
+        if (!process.env.JWT_SECRET) {
+            console.error('JWT_SECRET is not defined in environment variables')
+            return res.status(500).json({ message: "Server configuration error" })
         }
 
-         const token = jwt.sign({id: getUser._id},process.env.JWT_SECRET,{expiresIn: '30d'})
+        const getUser = await User.findOne({ Email })
+        if (!getUser) {
+            return res.status(400).json({ message: "User not Found" })
+        }
 
-        res.status(200).json({message: "User loggged",token})
-        
+        // Verify password
+        const isPasswordValid = await bcrypt.compare(Password, getUser.Password)
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: "Invalid credentials" })
+        }
+
+        const token = jwt.sign({ id: getUser._id }, process.env.JWT_SECRET, { expiresIn: '30d' })
+
+        res.status(200).json({ message: "User logged in", token })
+
     } catch (error) {
-        res.status(500).json({message: "Internal Server Error"})
+        console.error('Login error:', error) // Log the actual error
+        res.status(500).json({ message: "Internal Server Error", error: error.message })
     }
-
 })
 
-router.post('/logout',(req,res)=> {
-    res.status(200).json({message: "User logged Out....."})
+router.post('/logout', (req, res) => {
+    res.status(200).json({ message: "User logged Out....." })
 })
 
 module.exports = router;
