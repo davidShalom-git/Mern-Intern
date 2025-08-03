@@ -15,9 +15,8 @@ console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'Missing')
 // Global connection cache for serverless
 let cachedConnection = null
 
-// MongoDB connection function with proper serverless handling
+// MongoDB connection function
 const connectDB = async () => {
-    // If we have a cached connection and it's connected, use it
     if (cachedConnection && mongoose.connection.readyState === 1) {
         console.log('Using cached MongoDB connection')
         return cachedConnection
@@ -29,13 +28,13 @@ const connectDB = async () => {
         const conn = await mongoose.connect(process.env.MONGODB_URL, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000, // 5 seconds
-            socketTimeoutMS: 45000, // 45 seconds
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
             maxPoolSize: 10,
             minPoolSize: 5,
             maxIdleTimeMS: 30000,
-            bufferCommands: false, // Disable mongoose buffering
-            bufferMaxEntries: 0, // Disable mongoose buffering
+            bufferCommands: false,
+            bufferMaxEntries: 0,
         })
 
         console.log(`MongoDB Connected: ${conn.connection.host}`)
@@ -49,7 +48,49 @@ const connectDB = async () => {
     }
 }
 
-// Middleware to ensure DB connection before processing requests
+// Manual CORS middleware - MORE AGGRESSIVE APPROACH
+app.use((req, res, next) => {
+    const allowedOrigins = [
+        'https://mernintern2025.vercel.app',
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://localhost:5174'
+    ]
+    
+    const origin = req.headers.origin
+    console.log('Request origin:', origin)
+    
+    // Set CORS headers manually
+    if (allowedOrigins.includes(origin) || !origin) {
+        res.setHeader('Access-Control-Allow-Origin', origin || '*')
+    } else {
+        res.setHeader('Access-Control-Allow-Origin', 'https://mernintern2025.vercel.app')
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin')
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.setHeader('Access-Control-Max-Age', '86400') // 24 hours
+    
+    // Handle preflight OPTIONS requests
+    if (req.method === 'OPTIONS') {
+        console.log('Handling preflight request')
+        res.status(200).end()
+        return
+    }
+    
+    next()
+})
+
+// Also use the cors middleware as backup
+app.use(cors({
+    origin: true, // Allow all origins as fallback
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+}))
+
+// Middleware to ensure DB connection
 const ensureDBConnection = async (req, res, next) => {
     try {
         await connectDB()
@@ -63,41 +104,17 @@ const ensureDBConnection = async (req, res, next) => {
     }
 }
 
-// CORS configuration for your specific domains
-const corsOptions = {
-    origin: [
-        'https://mernintern2025.vercel.app', // Your frontend domain
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'http://localhost:5174'
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-        'Content-Type', 
-        'Authorization', 
-        'X-Requested-With',
-        'Accept',
-        'Origin'
-    ],
-    credentials: true,
-    optionsSuccessStatus: 200
-}
-
-// Apply CORS
-app.use(cors(corsOptions))
-app.options('*', cors(corsOptions))
-
 // Body parser middleware
 app.use(bodyParser.json({ limit: '10mb' }))
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }))
 
-// Add request logging for debugging
+// Request logging
 app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`)
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.headers.origin}`)
     next()
 })
 
-// Apply database connection middleware to API routes
+// Routes with DB connection middleware
 app.use('/api/blog', ensureDBConnection, blog)
 app.use('/api/blog', ensureDBConnection, User)
 
@@ -107,11 +124,12 @@ app.get('/', (req, res) => {
         message: 'API is running successfully!',
         timestamp: new Date().toISOString(),
         dbStatus: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+        cors: 'enabled',
         environment: process.env.NODE_ENV || 'development'
     })
 })
 
-// Error handling middleware (must be after routes)
+// Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err)
     res.status(500).json({ 
@@ -140,20 +158,11 @@ mongoose.connection.on('disconnected', () => {
     cachedConnection = null
 })
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-    console.log('Closing MongoDB connection...')
-    await mongoose.connection.close()
-    process.exit(0)
-})
-
 module.exports = app
 
-// Local development server
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 2000
     
-    // Connect to DB first, then start server
     connectDB().then(() => {
         app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`)
