@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Upload, X, Camera, User, FileText, Tag, Sparkles, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import Nav from './Nav';
 
 // Toast Component
 const Toast = ({ message, type, isVisible, onClose }) => {
@@ -46,6 +45,11 @@ const BlogUpload = () => {
         }, 5000);
     };
 
+    // Check if device is mobile
+    const isMobile = () => {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    };
+
     const generateAIContent = async (title, userContent = "") => {
         if (!title.trim()) {
             showToast("Please enter a title first to generate AI content!", 'error');
@@ -58,7 +62,6 @@ const BlogUpload = () => {
         let prompt;
         
         if (userContent.trim()) {
-            // If user has written content, improve it
             prompt = `Please improve the following blog content by:
                 1. Correcting any grammar, spelling, and punctuation errors
                 2. Improving sentence structure and clarity
@@ -73,7 +76,6 @@ const BlogUpload = () => {
 
                 Please return only the improved content with proper paragraph formatting.`;
         } else {
-            // If no content, generate based on title
             prompt = `Write a comprehensive and engaging blog post about: "${title}"
 
                 Please create:
@@ -118,7 +120,6 @@ const BlogUpload = () => {
             if (data.candidates && data.candidates[0] && data.candidates[0].content) {
                 const generatedText = data.candidates[0].content.parts[0].text.trim();
                 
-                // Format the content to ensure proper paragraph spacing
                 const formattedContent = generatedText
                     .split('\n')
                     .map(line => line.trim())
@@ -164,21 +165,51 @@ const BlogUpload = () => {
         }
     };
 
+    // Enhanced file validation for mobile
+    const validateFile = (file) => {
+        // Check file size (max 10MB for mobile compatibility)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showToast('File too large. Please select files under 10MB.', 'error');
+            return false;
+        }
+
+        // Check file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            showToast('Please select a valid image file (JPEG, PNG, GIF, WebP).', 'error');
+            return false;
+        }
+
+        return true;
+    };
+
     const handleImageUpload = (event) => {
         const files = event.target.files;
         if (files.length > 0) {
-            const imagesArray = Array.from(files).map(file => ({
+            const validFiles = Array.from(files).filter(validateFile);
+            
+            if (validFiles.length === 0) {
+                return;
+            }
+
+            const imagesArray = validFiles.map(file => ({
                 url: URL.createObjectURL(file),
                 alt: file.name,
                 isPrimary: false,
                 file: file
             }));
+            
             setFormData(prevData => ({
                 ...prevData,
                 Images: [...prevData.Images, ...imagesArray].slice(0, 4)
             }));
-            showToast(`${files.length} image(s) uploaded successfully!`, 'success');
+            
+            showToast(`${validFiles.length} image(s) uploaded successfully!`, 'success');
         }
+        
+        // Clear the input to allow re-selection of the same file
+        event.target.value = '';
     };
 
     const handleInputChange = (event) => {
@@ -196,12 +227,22 @@ const BlogUpload = () => {
     const handleFileChange = (e) => {
         const { name, files } = e.target;
         if (name === 'AuthorImage' && files[0]) {
-            setFormData(prev => ({ ...prev, AuthorImage: files[0] }));
-            showToast('Author image updated successfully!', 'success');
+            if (validateFile(files[0])) {
+                setFormData(prev => ({ ...prev, AuthorImage: files[0] }));
+                showToast('Author image updated successfully!', 'success');
+            }
         }
+        // Clear the input
+        e.target.value = '';
     };
 
     const removeImage = (indexToRemove) => {
+        // Clean up URL objects to prevent memory leaks
+        const imageToRemove = formData.Images[indexToRemove];
+        if (imageToRemove && imageToRemove.url) {
+            URL.revokeObjectURL(imageToRemove.url);
+        }
+        
         setFormData(prevData => ({
             ...prevData,
             Images: prevData.Images.filter((_, index) => index !== indexToRemove)
@@ -210,6 +251,9 @@ const BlogUpload = () => {
     };
 
     const removeAuthorImage = () => {
+        if (formData.AuthorImage) {
+            URL.revokeObjectURL(URL.createObjectURL(formData.AuthorImage));
+        }
         setFormData(prev => ({ ...prev, AuthorImage: null }));
         const fileInput = document.querySelector('input[name="AuthorImage"]');
         if (fileInput) fileInput.value = '';
@@ -232,14 +276,28 @@ const BlogUpload = () => {
         try {
             console.log("Uploading data...");
             
+            // Enhanced fetch options for mobile compatibility
             const response = await fetch('https://mern-intern-xi.vercel.app/api/blog/upload', {
                 method: 'POST',
-                body: formDataToSend
+                body: formDataToSend,
+                // Don't set Content-Type header - let browser set it with boundary for FormData
+                // credentials: 'include', // Uncomment if your API requires credentials
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const data = await response.json();
             console.log("Data uploaded successfully:", data);
             showToast("Blog uploaded successfully!", 'success');
+            
+            // Clean up URL objects
+            formData.Images.forEach(image => {
+                if (image.url) {
+                    URL.revokeObjectURL(image.url);
+                }
+            });
             
             // Reset form after successful upload
             setFormData({
@@ -253,13 +311,16 @@ const BlogUpload = () => {
             
         } catch (error) {
             console.error("Error uploading data:", error);
-            showToast("Error uploading blog. Please try again.", 'error');
+            showToast(`Error uploading blog: ${error.message}`, 'error');
         }
     };
 
     const urlToFile = async (url, filename = 'default-avatar.png') => {
         try {
             const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch image: ${response.status}`);
+            }
             const blob = await response.blob();
             return new File([blob], filename, { type: blob.type });
         } catch (error) {
@@ -279,11 +340,14 @@ const BlogUpload = () => {
         setIsSubmitting(true);
 
         const formDataToSend = new FormData();
-        formDataToSend.append('Title', formData.Title);
-        formDataToSend.append('Topic', formData.Topic);
-        formDataToSend.append('Content', formData.Content);
-        formDataToSend.append('Author', formData.Author);
+        
+        // Append text fields
+        formDataToSend.append('Title', formData.Title.trim());
+        formDataToSend.append('Topic', formData.Topic.trim());
+        formDataToSend.append('Content', formData.Content.trim());
+        formDataToSend.append('Author', formData.Author.trim());
 
+        // Handle author image
         if (formData.AuthorImage instanceof File) {
             formDataToSend.append('AuthorImage', formData.AuthorImage);
         } else {
@@ -291,20 +355,24 @@ const BlogUpload = () => {
                 const defaultImageFile = await urlToFile(DEFAULT_USER_IMAGE, 'default-avatar.png');
                 if (defaultImageFile) {
                     formDataToSend.append('AuthorImage', defaultImageFile);
-                } else {
-                    formDataToSend.append('AuthorImage', '');
                 }
             } catch (error) {
                 console.error('Error handling default image:', error);
-                formDataToSend.append('AuthorImage', '');
             }
         }
 
-        formData.Images.forEach((imageObj) => {
+        // Handle blog images
+        formData.Images.forEach((imageObj, index) => {
             if (imageObj.file instanceof File) {
                 formDataToSend.append('Images', imageObj.file);
             }
         });
+
+        // Debug FormData contents (remove in production)
+        console.log('FormData contents:');
+        for (let [key, value] of formDataToSend.entries()) {
+            console.log(key, value);
+        }
 
         await uploadData(formDataToSend);
         setIsSubmitting(false);
@@ -327,23 +395,30 @@ const BlogUpload = () => {
 
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             const files = e.dataTransfer.files;
-            const imagesArray = Array.from(files).map(file => ({
+            const validFiles = Array.from(files).filter(validateFile);
+            
+            if (validFiles.length === 0) {
+                return;
+            }
+
+            const imagesArray = validFiles.map(file => ({
                 url: URL.createObjectURL(file),
                 alt: file.name,
                 isPrimary: false,
                 file: file
             }));
+            
             setFormData(prevData => ({
                 ...prevData,
                 Images: [...prevData.Images, ...imagesArray].slice(0, 4)
             }));
-            showToast(`${files.length} image(s) uploaded successfully!`, 'success');
+            
+            showToast(`${validFiles.length} image(s) uploaded successfully!`, 'success');
         }
     };
 
     return (
         <div className='min-h-screen mt-22 bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 py-12 px-4 relative'>
-            <Nav />
             
             {/* Toast Notification */}
             <Toast 
@@ -368,10 +443,13 @@ const BlogUpload = () => {
                 <div className="text-center mb-10">
                     <h1 className='text-4xl font-bold text-white mb-3'>Create Your Blog</h1>
                     <p className='text-gray-400 text-lg'>Share your thoughts with the world</p>
+                    {isMobile() && (
+                        <p className='text-sm text-yellow-400 mt-2'>📱 Mobile optimized for better upload experience</p>
+                    )}
                 </div>
 
                 <div className="bg-black/40 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-gray-700/50">
-                    <div className="space-y-8">
+                    <form onSubmit={handleSubmit} className="space-y-8">
 
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 mb-4">
@@ -422,11 +500,13 @@ const BlogUpload = () => {
                                         onChange={handleImageUpload}
                                         className="hidden"
                                         id="imageUpload"
+                                        key={formData.Images.length} // Force re-render
                                     />
                                     <label htmlFor="imageUpload" className="cursor-pointer">
                                         <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                                         <p className="text-gray-300 mb-2">
-                                            <span className="font-semibold text-purple-400">Click to upload</span> or drag and drop
+                                            <span className="font-semibold text-purple-400">Tap to select images</span>
+                                            {!isMobile() && <span> or drag and drop</span>}
                                         </p>
                                         <p className="text-sm text-gray-500">PNG, JPG, GIF up to 10MB</p>
                                     </label>
@@ -583,8 +663,7 @@ const BlogUpload = () => {
                         </div>
 
                         <button
-                            type="button"
-                            onClick={handleSubmit}
+                            type="submit"
                             disabled={isSubmitting}
                             className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white font-semibold py-4 px-8 rounded-xl hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                         >
@@ -597,7 +676,7 @@ const BlogUpload = () => {
                                 {isSubmitting ? 'Publishing...' : 'Publish Blog'}
                             </div>
                         </button>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
