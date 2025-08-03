@@ -18,29 +18,30 @@ const SignUp = () => {
     const navigate = useNavigate()
 
     const handleSignUp = async () => {
-        setIsLoading(true)
-        try {
-            const response = await fetch(URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            })
+    setIsLoading(true)
+    try {
+        const response = await fetch(URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
 
-            const data = await response.json();
-            if (data && data.token) {
-                localStorage.setItem('token', data.token)
-                navigate('/')
-            }
-            return data;
+        const data = await response.json();
+        if (data && data.token) {
+            localStorage.setItem('token', data.token)
+            // Use replace instead of navigate to force a complete reload
+            window.location.replace('/')
         }
-        catch (error) {
-            console.log("Error in Signing Up:", error)
-        } finally {
-            setIsLoading(false)
-        }
+        return data;
     }
+    catch (error) {
+        console.log("Error in Signing Up:", error)
+    } finally {
+        setIsLoading(false)
+    }
+}
 
     const onChangeData = (e) => {
         setFormData({
