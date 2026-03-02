@@ -56,77 +56,30 @@ const BlogUpload = () => {
             return null;
         }
 
-        const GEMINI_API_KEY = 'AIzaSyCY_hNt2Fa3OXRBO3NnXZPt2cOq1NY6uzs';
-        const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
-
-        let prompt;
-        
-        if (userContent.trim()) {
-            prompt = `Please improve the following blog content by:
-                1. Correcting any grammar, spelling, and punctuation errors
-                2. Improving sentence structure and clarity
-                3. Making it more engaging and readable
-                4. Ensuring proper capitalization and formatting
-                5. Adding transitions between ideas where needed
-                6. Maintaining the original meaning and tone
-                7. Formatting it with proper paragraphs separated by line breaks
-
-                Original content:
-                ${userContent}
-
-                Please return only the improved content with proper paragraph formatting.`;
-        } else {
-            prompt = `Write a comprehensive and engaging blog post about: "${title}"
-
-                Please create:
-                1. An engaging introduction paragraph
-                2. 3-4 main body paragraphs with detailed content
-                3. A conclusion paragraph
-                4. Each paragraph should be well-structured and informative
-                5. Use proper grammar, spelling, and punctuation
-                6. Make it engaging and readable for a general audience
-                7. Separate each paragraph with a line break
-
-                Write the content in a professional yet conversational tone. Do not include any titles or headings, just return the paragraph content separated by line breaks.`;
-        }
+        const API_BASE = 'https://mern-intern-xi.vercel.app';
+        const url = `${API_BASE}/api/generate-content`;
 
         try {
-            const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.7,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 2048,
-                    }
-                })
+                    title: title.trim(),
+                    content: userContent.trim(),
+                }),
             });
 
             if (!response.ok) {
-                throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error || `Gemini API error: ${response.status} ${response.statusText}`);
             }
 
             const data = await response.json();
 
-            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-                const generatedText = data.candidates[0].content.parts[0].text.trim();
-                
-                const formattedContent = generatedText
-                    .split('\n')
-                    .map(line => line.trim())
-                    .filter(line => line.length > 0)
-                    .join('\n\n');
-                
-                return formattedContent;
+            if (data.content) {
+                return data.content;
             } else {
                 throw new Error('Invalid response format from Gemini API');
             }
