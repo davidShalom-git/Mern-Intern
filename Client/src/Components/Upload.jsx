@@ -57,7 +57,7 @@ const BlogUpload = () => {
         }
 
         const GEMINI_API_KEY = 'AIzaSyCY_hNt2Fa3OXRBO3NnXZPt2cOq1NY6uzs';
-        const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+        const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
         let prompt;
         
