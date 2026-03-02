@@ -15,8 +15,19 @@ mongoose.connect(process.env.MONGODB_URL).then((res)=> {
     console.log("MongoDB Error",error)
 })
 
-
-app.use(cors())
+// CORS so deployed frontend (mernintern2025.vercel.app) can call API
+app.use((req, res, next) => {
+    const origin = req.headers.origin
+    const allow = origin && (origin.includes('mernintern2025.vercel.app') || origin.includes('localhost'))
+        ? origin
+        : '*'
+    res.setHeader('Access-Control-Allow-Origin', allow)
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    if (req.method === 'OPTIONS') return res.sendStatus(204)
+    next()
+})
+app.use(cors({ origin: true }))
 app.use(bodyParser.json())
 
 app.use('/api/blog',blog);
